@@ -9,7 +9,7 @@ from zeeguu.api.test.fixtures import add_context_types, add_source_types
 
 @pytest.fixture(scope="function")
 def test_env():
-    print("\n===== Test case setup started =====")
+    print("\033[92m\n===== Test case setup started =====\n\033[0m")
     app = create_app(testing=True)
 
     with app.app_context():
@@ -19,10 +19,10 @@ def test_env():
             add_context_types()
             add_source_types()
 
-            print("\n===== Test case setup finished =====")
+            # print("\033[92m\n===== Test case setup finished =====\n\033[0m")
             yield db
 
-            print("\n===== Test case teardown started =====")
+            # print("\033[92m\n===== Test case teardown started =====\n\033[0m")
             db.session.close()
             db.drop_all()
-            print("\n===== Test case teardown finished =====")
+            print("\033[92m\n===== Test case teardown finished =====\n\033[0m")
