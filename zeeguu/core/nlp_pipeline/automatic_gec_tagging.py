@@ -560,7 +560,7 @@ class AutoGECTagging():
             # as wrong if it's in the sentece given it doesn't show up elsewhere in the solution.
             # We should not edit it in case of a Word Order Error.
             # The feedback instead is highlighting the previous errors.
-            print(operation,sol_words, word_for_correction)
+            if verbose: print(operation,sol_words, word_for_correction)
             if ((operation[:2] == "U:" or operation[:2] == "R:") and operation != "R:WO"):
                 if wProps["isInSentence"] and word_for_correction not in sol_words:
                     wProps["status"] = ""
