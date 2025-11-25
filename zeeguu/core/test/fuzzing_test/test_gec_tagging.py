@@ -1,12 +1,12 @@
 from typing import List, Any
 
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.GreyboxFuzzer import PowerSchedule
+from fuzzingbook.GreyboxFuzzer import AFLFastSchedule
 from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 
 from zeeguu.core.nlp_pipeline import SPACY_EN_MODEL
 from zeeguu.core.nlp_pipeline.automatic_gec_tagging import AutoGECTagging
-from zeeguu.core.test.fuzzing_test.gec_fuzzer import GecGreyboxFuzzer
+from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer
 from zeeguu.core.test.fuzzing_test.gec_generate_seed import gec_generate_seed
 from zeeguu.core.test.fuzzing_test.gec_mutator import GecMutator
 from zeeguu.core.test.fuzzing_test.setup import test_env
@@ -78,7 +78,7 @@ GEC_REPLACE: dict[str, List[str]] = {
 
 MUTATOR = GecMutator(ALL_WORDS, GEC_REPLACE)
 
-POWER_SCHEDULE = PowerSchedule()
+POWER_SCHEDULE = AFLFastSchedule(5)
 
 AGT = AutoGECTagging(SPACY_EN_MODEL, 'en')
 
@@ -99,8 +99,10 @@ def test_gec_tagging_labels(test_env):
         return AGT.anottate_clues(word_dictionary_list, original_sentence)
 
     runner = FunctionCoverageRunner(annotate_clues_wrapper)
-    fuzzer = GecGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
-    for i in range(100):
-        result = fuzzer.run(runner)
-        print(f"Mutation #{i + 1} input sentence: {fuzzer.inp}")
-        print(f"Result: {result}\n")
+    fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
+    trials = 500
+    for i in range(trials):
+        fuzzer.run(runner)
+        if i % 50 == 0:
+            print(f"Running mutation #{i + 1}")
+    print(f"Unique paths discovered: {len(fuzzer.coverages_seen)}")
