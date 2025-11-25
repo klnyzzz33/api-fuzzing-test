@@ -1,9 +1,9 @@
 import random
 import subprocess
-from typing import Tuple, List
+from typing import Tuple, List, Any
 
 from fuzzingbook.Fuzzer import Runner, PrintRunner
-from fuzzingbook.GreyboxFuzzer import Seed, PowerSchedule, Mutator
+from fuzzingbook.GreyboxFuzzer import Seed, PowerSchedule, Mutator, getPathID
 from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 
 Outcome = str
@@ -27,15 +27,11 @@ class Fuzzer:
 
 class AdvancedMutationFuzzer(Fuzzer):
     def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule) -> None:
-        super().__init__()
         self.seeds = seeds
         self.mutator = mutator
         self.schedule = schedule
         self.inputs: List[str] = []
-        self.population: List[Seed] = []
-        self.seed_index: int = 0
-        self.max_trials: int = 1
-        self.inp: str = ""
+        self.max_trials = 1
         self.reset()
 
     def reset(self) -> None:
@@ -61,13 +57,14 @@ class AdvancedMutationFuzzer(Fuzzer):
 
 
 class GecGreyboxFuzzer(AdvancedMutationFuzzer):
-    def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule):
+    def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule, max_population=100):
         super().__init__(seeds, mutator, schedule)
-        self.coverages_seen: set = set()
+        self.max_population = max_population
 
     def reset(self):
         super().reset()
         self.coverages_seen = set()
+        self.population = []
 
     def run(self, runner: FunctionCoverageRunner) -> Tuple[subprocess.CompletedProcess, Outcome]:
         result, outcome = super().run(runner)
@@ -76,5 +73,27 @@ class GecGreyboxFuzzer(AdvancedMutationFuzzer):
             seed = Seed(self.inp)
             seed.coverage = runner.coverage()
             self.coverages_seen.add(new_coverage)
-            self.population.append(seed)
+            if len(self.population) < self.max_population:
+                self.population.append(seed)
+            else:
+                min_seed_energy = min(s.energy for s in self.population)
+                for i in range(len(self.population)):
+                    if self.population[i].energy == min_seed_energy:
+                        self.population[i] = seed
+                        break
+        return result, outcome
+
+
+class CountingGreyboxFuzzer(GecGreyboxFuzzer):
+    def reset(self):
+        super().reset()
+        self.schedule.path_frequency = {}
+
+    def run(self, runner: FunctionCoverageRunner) -> Tuple[Any, str]:
+        result, outcome = super().run(runner)
+        path_id = getPathID(runner.coverage())
+        if path_id not in self.schedule.path_frequency:
+            self.schedule.path_frequency[path_id] = 1
+        else:
+            self.schedule.path_frequency[path_id] += 1
         return result, outcome
