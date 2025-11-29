@@ -1,3 +1,7 @@
+import os
+import subprocess
+import sys
+from shutil import which
 from typing import List, Any
 
 from fuzzingbook.Grammars import Grammar
@@ -10,6 +14,11 @@ from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer
 from zeeguu.core.test.fuzzing_test.gec_generate_seed import gec_generate_seed
 from zeeguu.core.test.fuzzing_test.gec_mutator import GecMutator
 from zeeguu.core.test.fuzzing_test.setup import test_env
+
+MUTATION_BRIDGE = {
+    "FUZZED_INPUT": None,
+    "EXPECTED_OUTPUT": None
+}
 
 GEC_INPUT_GRAMMAR: Grammar = {
     "<start>": ["<sentence>"],
@@ -88,11 +97,6 @@ def test_gec_tagging_labels(test_env):
     seeds = [original_sentence]
     print(f"\nOriginal sentence: {original_sentence}\n")
 
-    # input_str = seeds[0]
-    # for i in range(10):
-    #     input_str = MUTATOR.mutate(input_str)
-    #     print(input_str)
-
     def annotate_clues_wrapper(mutated_sentence: str) -> Any:
         user_tokens = mutated_sentence.split(" ")
         word_dictionary_list = list(map(lambda w: {"word": w, "isInSentence": True}, user_tokens))
@@ -100,9 +104,43 @@ def test_gec_tagging_labels(test_env):
 
     runner = FunctionCoverageRunner(annotate_clues_wrapper)
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
-    trials = 500
+
+    trials = 1
     for i in range(trials):
-        fuzzer.run(runner)
-        if i % 50 == 0:
-            print(f"Running mutation #{i + 1}")
+        [result, outcome] = fuzzer.run(runner)
+        MUTATION_BRIDGE["FUZZED_INPUT"] = original_sentence
+        MUTATION_BRIDGE["EXPECTED_OUTPUT"] = result
+
+        print(f"Original FUZZED_INPUT #{MUTATION_BRIDGE['FUZZED_INPUT']}")
+        print(f"Original EXPECTED_OUTPUT #{MUTATION_BRIDGE['EXPECTED_OUTPUT']}")
+
+        run_mutation()
+
     print(f"Unique paths discovered: {len(fuzzer.coverages_seen)}")
+
+
+def run_mutation():
+    mutpy_script = which("mut.py")
+    if mutpy_script is None:
+        raise RuntimeError("mut.py not found in PATH. Make sure MutPy is installed in this environment.")
+
+    cmd = [
+        sys.executable,
+        mutpy_script,
+        "--target", "zeeguu.core.nlp_pipeline.automatic_gec_tagging",
+        "--unit-test", "zeeguu.core.test.fuzzing_test.test_gec_mutation_bridge",
+        "-m"
+    ]
+
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        cwd=os.path.abspath(".")
+    )
+
+    print("=== MutPy STDOUT ===")
+    print(result.stdout)
+
+    print("=== MutPy STDERR ===")
+    print(result.stderr)
