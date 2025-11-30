@@ -130,20 +130,20 @@ def check_kills_new_mutant(input_str, expected_output):
 
     cosmic_ray_config = f"{MUTATION_TESTING_DIR}/cosmic_ray_gec_tagging.toml"
     cosmic_ray_session = f"{MUTATION_TESTING_DIR}/cosmic_ray_gec_tagging.sqlite"
-    cmd = [
-        sys.executable, "-m", "cosmic_ray.cli",
-        "exec",
-        cosmic_ray_config,
-        cosmic_ray_session
-    ]
-
     try:
+        if not os.path.exists(cosmic_ray_session):
+            subprocess.run(
+                [sys.executable, "-m", "cosmic_ray.cli", "init", cosmic_ray_config, cosmic_ray_session],
+                capture_output=True,
+                timeout=10
+            )
+
         subprocess.run(
-            cmd,
+            [sys.executable, "-m", "cosmic_ray.cli", "exec", cosmic_ray_config, cosmic_ray_session],
             capture_output=True,
             text=True,
             cwd=os.path.abspath("."),
-            timeout=10
+            timeout=20
         )
 
     except subprocess.TimeoutExpired:
@@ -153,8 +153,10 @@ def check_kills_new_mutant(input_str, expected_output):
         return False
 
     mutant_states = get_killed_mutants_from_db(cosmic_ray_session)
-    print(f"Killed {mutant_states['KILLED']} mutants out of {mutant_states['KILLED'] + mutant_states['SURVIVED']}")
-    print(f"Mutation score: {mutant_states['KILLED'] / (mutant_states['KILLED'] + mutant_states['SURVIVED']) * 100}%\n")
+    killed_mutants = mutant_states['KILLED'] if 'KILLED' in mutant_states else 0
+    survived_mutants = mutant_states['SURVIVED'] if 'SURVIVED' in mutant_states else 0
+    print(f"Killed {killed_mutants} mutants out of {killed_mutants + survived_mutants}")
+    print(f"Mutation score: {killed_mutants / (killed_mutants + survived_mutants) * 100}%\n")
     return True
 
 

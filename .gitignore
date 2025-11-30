@@ -50,3 +50,6 @@ diagrams/*.png
 diagrams/*.json
 
 *.md
+/mutation_testing/mutation_bridge.json
+/mutation_testing/cosmic_ray_gec_tagging.sqlite
+/mutation_testing/report.html
