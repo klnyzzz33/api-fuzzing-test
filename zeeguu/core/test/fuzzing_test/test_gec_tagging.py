@@ -1,4 +1,6 @@
+import json
 import os
+import sqlite3
 import subprocess
 import sys
 from shutil import which
@@ -15,11 +17,6 @@ from zeeguu.core.test.fuzzing_test.gec_generate_seed import gec_generate_seed
 from zeeguu.core.test.fuzzing_test.gec_mutator import GecMutator
 from zeeguu.core.test.fuzzing_test.setup import test_env
 
-MUTATION_BRIDGE = {
-    "FUZZED_INPUT": None,
-    "EXPECTED_OUTPUT": None
-}
-
 GEC_INPUT_GRAMMAR: Grammar = {
     "<start>": ["<sentence>"],
     "<sentence>": ["<sent_parts>", "<sent_parts> <sentence>"],
@@ -35,7 +32,7 @@ GEC_INPUT_GRAMMAR: Grammar = {
     "<punct>": [".", ",", ";", ":", "!"]
 }
 
-ALL_WORDS: list[str] = sorted({
+TERMINALS: list[str] = sorted({
     token
     for expansions in GEC_INPUT_GRAMMAR.values()
     for expansion in expansions
@@ -85,11 +82,17 @@ GEC_REPLACE: dict[str, List[str]] = {
     "smallest": ["smaller", "small"]
 }
 
-MUTATOR = GecMutator(ALL_WORDS, GEC_REPLACE)
+MUTATOR = GecMutator(TERMINALS, GEC_REPLACE)
 
 POWER_SCHEDULE = AFLFastSchedule(5)
 
 AGT = AutoGECTagging(SPACY_EN_MODEL, 'en')
+
+MUTATION_TESTING_DIR = "./mutation_testing"
+MUTATION_BRIDGE_FILE_PATH = f"{MUTATION_TESTING_DIR}/mutation_bridge.json"
+if not os.path.exists(MUTATION_BRIDGE_FILE_PATH):
+    with open(MUTATION_BRIDGE_FILE_PATH, 'w') as file:
+        file.write("")
 
 
 def test_gec_tagging_labels(test_env):
@@ -99,48 +102,66 @@ def test_gec_tagging_labels(test_env):
 
     def annotate_clues_wrapper(mutated_sentence: str) -> Any:
         user_tokens = mutated_sentence.split(" ")
-        word_dictionary_list = list(map(lambda w: {"word": w, "isInSentence": True}, user_tokens))
+        word_dictionary_list = [{"word": w, "isInSentence": True} for w in user_tokens]
         return AGT.anottate_clues(word_dictionary_list, original_sentence)
 
     runner = FunctionCoverageRunner(annotate_clues_wrapper)
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
 
-    trials = 1
+    trials = 3
     for i in range(trials):
         [result, outcome] = fuzzer.run(runner)
-        MUTATION_BRIDGE["FUZZED_INPUT"] = original_sentence
-        MUTATION_BRIDGE["EXPECTED_OUTPUT"] = result
 
-        print(f"Original FUZZED_INPUT #{MUTATION_BRIDGE['FUZZED_INPUT']}")
-        print(f"Original EXPECTED_OUTPUT #{MUTATION_BRIDGE['EXPECTED_OUTPUT']}")
+        print(f"FUZZED_INPUT: {fuzzer.inp}")
+        print(f"EXPECTED_OUTPUT: {result}")
 
-        run_mutation()
+        check_kills_new_mutant(fuzzer.inp, result)
 
-    print(f"Unique paths discovered: {len(fuzzer.coverages_seen)}")
+    # print(f"Unique paths discovered: {len(fuzzer.coverages_seen)}")
 
 
-def run_mutation():
-    mutpy_script = which("mut.py")
-    if mutpy_script is None:
-        raise RuntimeError("mut.py not found in PATH. Make sure MutPy is installed in this environment.")
+def check_kills_new_mutant(input_str, expected_output):
+    with open(MUTATION_BRIDGE_FILE_PATH, 'w') as f:
+        json.dump({"FUZZED_INPUT": input_str, "EXPECTED_OUTPUT": expected_output}, f)
 
+    cosmic_ray_script = which("cosmic-ray")
+    if cosmic_ray_script is None:
+        raise RuntimeError("\"cosmic-ray\" not found in PATH. Make sure CosmicRay is installed in this environment.")
+
+    cosmic_ray_config = f"{MUTATION_TESTING_DIR}/cosmic_ray_gec_tagging.toml"
+    cosmic_ray_session = f"{MUTATION_TESTING_DIR}/cosmic_ray_gec_tagging.sqlite"
     cmd = [
-        sys.executable,
-        mutpy_script,
-        "--target", "zeeguu.core.nlp_pipeline.automatic_gec_tagging",
-        "--unit-test", "zeeguu.core.test.fuzzing_test.test_gec_mutation_bridge",
-        "-m"
+        sys.executable, "-m", "cosmic_ray.cli",
+        "exec",
+        cosmic_ray_config,
+        cosmic_ray_session
     ]
 
-    result = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        cwd=os.path.abspath(".")
-    )
+    try:
+        subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            cwd=os.path.abspath("."),
+            timeout=10
+        )
 
-    print("=== MutPy STDOUT ===")
-    print(result.stdout)
+    except subprocess.TimeoutExpired:
+        ...
+    except Exception as e:
+        print(f"Error running cosmic-ray: {e}")
+        return False
 
-    print("=== MutPy STDERR ===")
-    print(result.stderr)
+    mutant_states = get_killed_mutants_from_db(cosmic_ray_session)
+    print(f"Killed {mutant_states['KILLED']} mutants out of {mutant_states['KILLED'] + mutant_states['SURVIVED']}")
+    print(f"Mutation score: {mutant_states['KILLED'] / (mutant_states['KILLED'] + mutant_states['SURVIVED']) * 100}%\n")
+    return True
+
+
+def get_killed_mutants_from_db(cosmic_ray_session):
+    conn = sqlite3.connect(cosmic_ray_session)
+    cursor = conn.cursor()
+    cursor.execute("SELECT test_outcome, count(*) FROM work_results GROUP BY test_outcome")
+    result = dict(cursor.fetchall())
+    conn.close()
+    return result

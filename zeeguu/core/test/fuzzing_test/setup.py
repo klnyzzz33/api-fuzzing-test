@@ -1,10 +1,15 @@
+import warnings
+
 import pytest
 import requests_mock
+from sqlalchemy.exc import SAWarning
 
 from zeeguu.api.app import create_app
 from zeeguu.core.model.db import db
 from zeeguu.core.test.mocking_the_web import mock_requests_get
 from zeeguu.api.test.fixtures import add_context_types, add_source_types
+
+warnings.filterwarnings('ignore', category=SAWarning)
 
 
 @pytest.fixture(scope="function")
