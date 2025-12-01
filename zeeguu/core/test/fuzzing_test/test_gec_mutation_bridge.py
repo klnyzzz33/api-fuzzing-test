@@ -1,22 +1,25 @@
 import json
 import os
 
-from zeeguu.core.test.fuzzing_test.test_gec_tagging import AGT, MUTATION_BRIDGE_FILE_PATH
+from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import MUTATION_BRIDGE_FILE_PATH
 
 
-def test_gec_mutpy_bridge():
+def test_gec_cosmic_ray_bridge():
     if not os.path.exists(MUTATION_BRIDGE_FILE_PATH):
         raise FileNotFoundError(f"Mutation bridge file not found: {MUTATION_BRIDGE_FILE_PATH}")
 
     with open(MUTATION_BRIDGE_FILE_PATH, 'r') as f:
         mutation_bridge = json.load(f)
 
-    fuzzed_input = mutation_bridge["FUZZED_INPUT"]
+    original_sentence = mutation_bridge["ORIGINAL_SENTENCE"]
+    mutated_sentence = mutation_bridge["MUTATED_SENTENCE"]
     expected = mutation_bridge["EXPECTED_OUTPUT"]
+    print(f"\nORIGINAL_SENTENCE: {original_sentence}")
+    print(f"MUTATED_SENTENCE: {mutated_sentence}")
+    print(f"EXPECTED_OUTPUT: {expected}\n")
 
-    print(f"In mutation FUZZED_INPUT #{mutation_bridge['FUZZED_INPUT']}")
-    print(f"In mutation EXPECTED_OUTPUT #{mutation_bridge['EXPECTED_OUTPUT']}")
-
-    user_tokens = fuzzed_input.split(" ")
+    from zeeguu.core.nlp_pipeline import AutoGECTagging, SPACY_EN_MODEL
+    agt = AutoGECTagging(SPACY_EN_MODEL, 'en')
+    user_tokens = mutated_sentence.split(" ")
     word_dict_list = [{"word": w, "isInSentence": True} for w in user_tokens]
-    assert AGT.anottate_clues(word_dict_list, fuzzed_input) == expected
+    assert agt.anottate_clues(word_dict_list, original_sentence) == expected
