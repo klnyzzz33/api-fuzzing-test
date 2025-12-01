@@ -66,22 +66,27 @@ class GecGreyboxFuzzer(AdvancedMutationFuzzer):
         self.coverages_seen = set()
         self.population = []
 
-    def run(self, runner: FunctionCoverageRunner) -> Tuple[subprocess.CompletedProcess, Outcome]:
+    def add_to_population(self, seed: Seed):
+        if len(self.population) < self.max_population:
+            self.population.append(seed)
+        else:
+            min_seed_energy = min(s.energy for s in self.population)
+            for i in range(len(self.population)):
+                if self.population[i].energy == min_seed_energy:
+                    self.population[i] = seed
+                    break
+
+    def run(self, runner: FunctionCoverageRunner) -> Tuple[subprocess.CompletedProcess, Outcome, bool]:
         result, outcome = super().run(runner)
         new_coverage = frozenset(runner.coverage())
+        coverage_increased = False
         if new_coverage not in self.coverages_seen:
+            coverage_increased = True
             seed = Seed(self.inp)
             seed.coverage = runner.coverage()
             self.coverages_seen.add(new_coverage)
-            if len(self.population) < self.max_population:
-                self.population.append(seed)
-            else:
-                min_seed_energy = min(s.energy for s in self.population)
-                for i in range(len(self.population)):
-                    if self.population[i].energy == min_seed_energy:
-                        self.population[i] = seed
-                        break
-        return result, outcome
+            self.add_to_population(seed)
+        return result, outcome, coverage_increased
 
 
 class CountingGreyboxFuzzer(GecGreyboxFuzzer):
@@ -89,11 +94,11 @@ class CountingGreyboxFuzzer(GecGreyboxFuzzer):
         super().reset()
         self.schedule.path_frequency = {}
 
-    def run(self, runner: FunctionCoverageRunner) -> Tuple[Any, str]:
-        result, outcome = super().run(runner)
+    def run(self, runner: FunctionCoverageRunner) -> Tuple[Any, str, bool]:
+        result, outcome, coverage_increased = super().run(runner)
         path_id = getPathID(runner.coverage())
         if path_id not in self.schedule.path_frequency:
             self.schedule.path_frequency[path_id] = 1
         else:
             self.schedule.path_frequency[path_id] += 1
-        return result, outcome
+        return result, outcome, coverage_increased

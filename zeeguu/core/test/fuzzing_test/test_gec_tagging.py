@@ -3,11 +3,10 @@ import os
 import sqlite3
 import subprocess
 import sys
-from shutil import which
 from typing import List
 
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.GreyboxFuzzer import AFLFastSchedule
+from fuzzingbook.GreyboxFuzzer import AFLFastSchedule, Seed
 from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 
 from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer
@@ -102,54 +101,58 @@ def test_gec_tagging_labels(test_env):
     runner = FunctionCoverageRunner(annotate_clues_wrapper)
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
 
-    trials = 1
+    print("Starting fuzzing loop...\n")
+    kill_count = 0
+    trials = 100
     for i in range(trials):
-        [result, outcome] = fuzzer.run(runner)
-        print(f"FUZZED_INPUT: {fuzzer.inp}")
-        print(f"EXPECTED_OUTPUT: {result}")
+        result, _, coverage_increased = fuzzer.run(runner)
+        print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
+        if not coverage_increased:
+            new_kill_count = run_mutation_tests(original_sentence, fuzzer.inp, result)
+            if new_kill_count > kill_count:
+                kill_count = new_kill_count
+                seed = Seed(fuzzer.inp)
+                seed.coverage = runner.coverage()
+                fuzzer.add_to_population(seed)
+            reset_sut_source_code()
+        print()
+    print("Fuzzing loop ended.")
+    print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
+    killed_mutants, survived_mutants = get_mutation_test_results_from_db()
+    print(f"Mutants killed: {killed_mutants} out of {killed_mutants + survived_mutants}")
+    print(f"Mutation score: {killed_mutants / (killed_mutants + survived_mutants) * 100:.2f}%")
 
-        check_kills_new_mutant(original_sentence, fuzzer.inp, result)
-        reset_sut_source_code()
 
-    # print(f"Unique paths discovered: {len(fuzzer.coverages_seen)}")
-
-
-def check_kills_new_mutant(original_sentence, input_str, expected_output):
+def run_mutation_tests(original_sentence, input_str, expected_output):
     with open(MUTATION_BRIDGE_FILE_PATH, 'w') as f:
         json.dump({"ORIGINAL_SENTENCE": original_sentence, "MUTATED_SENTENCE": input_str,
                    "EXPECTED_OUTPUT": expected_output}, f)
-
-    cosmic_ray_script = which("cosmic-ray")
-    if cosmic_ray_script is None:
-        raise RuntimeError("\"cosmic-ray\" not found in PATH. Make sure CosmicRay is installed in this environment.")
-
     try:
+        print("Coverage not increased. Starting mutation testing...")
         subprocess.run(
             [sys.executable, "-m", "cosmic_ray.cli", "exec", COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION],
             capture_output=True,
             text=True,
             cwd=os.path.abspath("."),
-            timeout=20
+            timeout=30
         )
-
     except subprocess.TimeoutExpired:
         ...
     except Exception as e:
         print(f"Unexpected error: {e}")
-        return False
-
-    mutant_states = get_killed_mutants_from_db()
-    killed_mutants = mutant_states['KILLED'] if 'KILLED' in mutant_states else 0
-    survived_mutants = mutant_states['SURVIVED'] if 'SURVIVED' in mutant_states else 0
-    print(f"Killed {killed_mutants} mutants out of {killed_mutants + survived_mutants}")
-    print(f"Mutation score: {killed_mutants / (killed_mutants + survived_mutants) * 100}%\n")
-    return True
+    print("Mutation testing ended.")
+    killed_mutants, survived_mutants = get_mutation_test_results_from_db()
+    print(f"{killed_mutants} killed mutants out of {killed_mutants + survived_mutants}")
+    print(f"Mutation score: {killed_mutants / (killed_mutants + survived_mutants) * 100:.2f}%")
+    return killed_mutants
 
 
-def get_killed_mutants_from_db():
+def get_mutation_test_results_from_db():
     conn = sqlite3.connect(COSMIC_RAY_SESSION)
     cursor = conn.cursor()
     cursor.execute("SELECT test_outcome, count(*) FROM work_results GROUP BY test_outcome")
     result = dict(cursor.fetchall())
     conn.close()
-    return result
+    killed_mutants = result['KILLED'] if 'KILLED' in result else 0
+    survived_mutants = result['SURVIVED'] if 'SURVIVED' in result else 0
+    return killed_mutants, survived_mutants
