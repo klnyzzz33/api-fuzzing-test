@@ -49,7 +49,13 @@ venv311_py311/
 diagrams/*.png
 diagrams/*.json
 
-*.md
 /zeeguu/core/test/fuzzing_test/mutation_testing/mutation_bridge.json
 /zeeguu/core/test/fuzzing_test/mutation_testing/cosmic_ray_gec_tagging.sqlite
 /zeeguu/core/test/fuzzing_test/mutation_testing/report.html
+
+/vendor/cosmic-ray/build/
+/vendor/cosmic-ray/dist/
+/vendor/cosmic-ray/**/__pycache__/
+/vendor/cosmic-ray/**/*.pyc
+/vendor/cosmic-ray/**/*.egg-info/
+/vendor/cosmic-ray/.pytest_cache/

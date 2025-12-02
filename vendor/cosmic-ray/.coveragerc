@@ -1,0 +1,17 @@
+[run]
+source = .
+branch = True
+
+# Wrong warning caused by include used in [report] (Coveragepy 4.4.2)
+# Ref: https://bitbucket.org/ned/coveragepy/issues/621
+disable_warnings = include-ignored
+
+[report]
+include = cosmic_ray/*,test/*
+exclude_lines =
+    raise NotImplementedError
+    pragma: no cover
+# Branch coverage: ignore default and assert statements.
+partial_branches =
+    \s+#\s*(pragma|PRAGMA)[:\s]?\s*(no|NO)\s*(branch|BRANCH)
+    ^\s*assert\s
