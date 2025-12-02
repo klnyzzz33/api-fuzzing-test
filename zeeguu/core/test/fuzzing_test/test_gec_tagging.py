@@ -102,28 +102,29 @@ def test_gec_tagging_labels(test_env):
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
 
     print("Starting fuzzing loop...\n")
-    kill_count = 0
+    total_kill_count = 0
+    mutant_set = set()
     trials = 100
     for i in range(trials):
         result, _, coverage_increased = fuzzer.run(runner)
         print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         if not coverage_increased:
-            new_kill_count = run_mutation_tests(original_sentence, fuzzer.inp, result)
-            if new_kill_count > kill_count:
-                kill_count = new_kill_count
+            kill_count, mutant_set = run_mutation_tests(original_sentence, fuzzer.inp, result, mutant_set)
+            if kill_count > total_kill_count:
+                total_kill_count = kill_count
                 seed = Seed(fuzzer.inp)
                 seed.coverage = runner.coverage()
                 fuzzer.add_to_population(seed)
+            clear_survived_mutants()
             reset_sut_source_code()
         print()
     print("Fuzzing loop ended.")
     print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
-    killed_mutants, survived_mutants = get_mutation_test_results_from_db()
-    print(f"Mutants killed: {killed_mutants} out of {killed_mutants + survived_mutants}")
-    print(f"Mutation score: {killed_mutants / (killed_mutants + survived_mutants) * 100:.2f}%")
+    print(f"Mutants killed: {total_kill_count} out of {len(mutant_set)}")
+    print(f"Mutation score: {total_kill_count / len(mutant_set) * 100:.2f}%")
 
 
-def run_mutation_tests(original_sentence, input_str, expected_output):
+def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set):
     with open(MUTATION_BRIDGE_FILE_PATH, 'w') as f:
         json.dump({"ORIGINAL_SENTENCE": original_sentence, "MUTATED_SENTENCE": input_str,
                    "EXPECTED_OUTPUT": expected_output}, f)
@@ -141,18 +142,29 @@ def run_mutation_tests(original_sentence, input_str, expected_output):
     except Exception as e:
         print(f"Unexpected error: {e}")
     print("Mutation testing ended.")
-    killed_mutants, survived_mutants = get_mutation_test_results_from_db()
-    print(f"{killed_mutants} killed mutants out of {killed_mutants + survived_mutants}")
-    print(f"Mutation score: {killed_mutants / (killed_mutants + survived_mutants) * 100:.2f}%")
-    return killed_mutants
+    kill_count, mutant_set = get_mutation_test_results_from_db(mutant_set)
+    print(f"{kill_count} killed mutants out of {len(mutant_set)}")
+    print(f"Mutation score: {kill_count / len(mutant_set) * 100:.2f}%")
+    return kill_count, mutant_set
 
 
-def get_mutation_test_results_from_db():
+def get_mutation_test_results_from_db(mutant_set):
     conn = sqlite3.connect(COSMIC_RAY_SESSION)
     cursor = conn.cursor()
-    cursor.execute("SELECT test_outcome, count(*) FROM work_results GROUP BY test_outcome")
-    result = dict(cursor.fetchall())
+    cursor.execute("SELECT job_id, test_outcome FROM work_results")
+    result = list(cursor.fetchall())
     conn.close()
-    killed_mutants = result['KILLED'] if 'KILLED' in result else 0
-    survived_mutants = result['SURVIVED'] if 'SURVIVED' in result else 0
-    return killed_mutants, survived_mutants
+    killed = 0
+    for record in result:
+        mutant_set.add(record[0])
+        if record[1] == "KILLED":
+            killed += 1
+    return killed, mutant_set
+
+
+def clear_survived_mutants():
+    conn = sqlite3.connect(COSMIC_RAY_SESSION)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM work_results WHERE test_outcome != 'KILLED'")
+    conn.commit()
+    conn.close()
