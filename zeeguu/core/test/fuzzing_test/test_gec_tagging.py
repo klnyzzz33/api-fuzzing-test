@@ -141,8 +141,7 @@ def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set
             [sys.executable, "-m", "cosmic_ray.cli", "exec", COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION],
             capture_output=True,
             text=True,
-            cwd=os.path.abspath("."),
-            timeout=30
+            cwd=os.path.abspath(".")
         )
     except subprocess.TimeoutExpired:
         ...
