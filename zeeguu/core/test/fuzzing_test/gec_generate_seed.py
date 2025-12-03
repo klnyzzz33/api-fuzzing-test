@@ -3,7 +3,7 @@ from fuzzingbook.Grammars import Grammar, START_SYMBOL, nonterminals, random, Ex
 
 def gec_generate_seed(grammar: Grammar,
                       start_symbol: str = START_SYMBOL,
-                      max_nonterminals: int = 10,
+                      max_nonterminals: int = 15,
                       max_expansion_trials: int = 100,
                       log: bool = False) -> str:
     term = start_symbol

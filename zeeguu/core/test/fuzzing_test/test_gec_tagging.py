@@ -19,8 +19,8 @@ from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import test_env, MUTAT
 
 GEC_INPUT_GRAMMAR: Grammar = {
     "<start>": ["<sentence>"],
-    "<sentence>": ["<sent_parts>", "<sent_parts> <sentence>"],
-    "<sent_parts>": ["<token>", "<token> <token>"],
+    "<sentence>": ["<sent_parts> <sent_parts> <sent_parts>"],
+    "<sent_parts>": ["<token>", "<token> <sent_parts>"],
     "<token>": ["<noun>", "<verb>", "<prep>", "<adj>", "<adv>", "<pron>", "<punct>"],
     "<noun>": ["cat", "cats", "book", "books", "airplane", "plane"],
     "<verb>": ["am", "are", "is", "was", "were", "go", "goes", "went", "run", "runs", "running", "eat", "eats",
