@@ -172,6 +172,22 @@ class WorkDB:
             )
             return tuple(_work_item_from_storage(work_item) for work_item in pending)
 
+    def set_batch_size(self, batch_size):
+        self.mutant_batch_size = batch_size
+
+    @property
+    def pending_work_items_batch(self):
+        "Iterable of randomly selected pending work items of size mutant_batch_size."
+        with self._session_maker.begin() as session:
+            completed_job_ids = session.query(WorkResultStorage.job_id)
+            pending = (
+                session.query(WorkItemStorage)
+                .where(~WorkItemStorage.job_id.in_(completed_job_ids))
+                .order_by(func.random())
+                .limit(self.mutant_batch_size)
+            )
+            return tuple(_work_item_from_storage(work_item) for work_item in pending)
+
     @property
     def completed_work_items(self):
         "Iterable of ``(work-item, result)``\\s for all completed items."

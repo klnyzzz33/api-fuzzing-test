@@ -138,7 +138,7 @@ def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set
             kill_count, mutant_set = get_mutation_test_results_from_db(mutant_set)
             return kill_count, mutant_set
         subprocess.run(
-            [sys.executable, "-m", "cosmic_ray.cli", "exec", COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION],
+            [sys.executable, "-m", "cosmic_ray.cli", "exec_batch", COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION],
             capture_output=True,
             text=True,
             cwd=os.path.abspath(".")

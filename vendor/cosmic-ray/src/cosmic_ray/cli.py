@@ -120,6 +120,22 @@ def handle_exec(config_file, session_file):
     sys.exit(ExitCode.OK)
 
 
+@cli.command(name="exec_batch")
+@click.argument("config_file")
+@click.argument("session_file")
+def handle_exec_batch(config_file, session_file):
+    """Perform batch size of the remaining work to be done in the specified session.
+    This requires that the rest of your mutation testing
+    infrastructure (e.g. worker processes) are already running.
+    """
+    cfg = load_config(config_file)
+
+    with use_db(session_file, mode=WorkDB.Mode.open) as work_db:
+        work_db.set_batch_size(cfg.mutant_batch_size)
+        cosmic_ray.commands.execute_batch(work_db, cfg)
+    sys.exit(ExitCode.OK)
+
+
 @cli.command()
 @click.argument("config_file")
 @click.option(

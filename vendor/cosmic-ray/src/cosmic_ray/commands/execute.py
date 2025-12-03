@@ -52,3 +52,29 @@ def execute(work_db, config: ConfigDict):
         on_task_complete=on_task_complete,
     )
     log.info("Execution finished")
+
+
+def execute_batch(work_db, config: ConfigDict):
+    """Execute batch size of pending work in the database `work_db`,
+    recording the results.
+
+    This looks for any work in `work_db` which has no results, schedules it to
+    be executed, and records any results that arrive.
+    """
+    _update_progress(work_db)
+    distributor = get_distributor(config.distributor_name)
+
+    def on_task_complete(job_id, work_result):
+        work_db.set_result(job_id, work_result)
+        _update_progress(work_db)
+        log.info("Job %s complete", job_id)
+
+    log.info("Beginning execution")
+    distributor(
+        work_db.pending_work_items_batch,
+        config.test_command,
+        config.timeout,
+        config.distributor_config,
+        on_task_complete=on_task_complete,
+    )
+    log.info("Execution finished")

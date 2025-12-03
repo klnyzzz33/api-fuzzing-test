@@ -55,8 +55,7 @@ def reset_gec_test():
         [sys.executable, "-m", "cosmic_ray.cli", "init", COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION, "--force"],
         capture_output=True,
         text=True,
-        cwd=os.path.abspath("."),
-        timeout=10
+        cwd=os.path.abspath(".")
     )
 
 
@@ -65,6 +64,5 @@ def reset_sut_source_code():
         ["git", "restore", SYSTEM_UNDER_TEST_PATH],
         capture_output=True,
         text=True,
-        cwd=os.path.abspath("."),
-        timeout=10
+        cwd=os.path.abspath(".")
     )

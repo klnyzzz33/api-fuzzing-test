@@ -78,6 +78,11 @@ class ConfigDict(dict):
         return float(self["timeout"])
 
     @property
+    def mutant_batch_size(self):
+        """The number of mutants to be randomly sampled from the killable set when running exec_batch."""
+        return int(self["mutant-batch-size"]) if "mutant-batch-size" in self else 0
+
+    @property
     def distributor_name(self):
         "The name of the distributor to use."
         return self["distributor"]["name"]
