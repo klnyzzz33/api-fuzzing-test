@@ -105,13 +105,15 @@ def test_gec_tagging_labels(test_env):
     print("Starting fuzzing loop...\n")
     total_kill_count = 0
     mutant_set = set()
+    false_positives_timeout = 0
+    false_positives_error = 0
     trials = 100
     for i in range(trials):
         result, _, coverage_increased = fuzzer.run(runner)
         print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         if not coverage_increased:
-            kill_count, mutant_set = run_mutation_tests(original_sentence, fuzzer.inp, result, mutant_set,
-                                                        runner.coverage())
+            kill_count, mutant_set, false_positives_timeout, false_positives_error = run_mutation_tests(
+                original_sentence, fuzzer.inp, result, mutant_set, runner.coverage())
             if kill_count > total_kill_count:
                 total_kill_count = kill_count
                 seed = Seed(fuzzer.inp)
@@ -124,6 +126,8 @@ def test_gec_tagging_labels(test_env):
     print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
     print(f"Mutants killed: {total_kill_count} out of {len(mutant_set)}")
     print(f"Mutation score: {total_kill_count / len(mutant_set) * 100 if len(mutant_set) > 0 else 0:.2f}%")
+    print(f"Timeout false positives: {false_positives_timeout}")
+    print(f"System under test error false positives: {false_positives_error}")
 
 
 def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set, coverage):
@@ -135,8 +139,9 @@ def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set
         candidate_mutations = filter_killable_mutants(coverage)
         if not candidate_mutations:
             print("Nothing to test, skipping mutation testing.")
-            kill_count, mutant_set = get_mutation_test_results_from_db(mutant_set)
-            return kill_count, mutant_set
+            kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
+                mutant_set)
+            return kill_count, mutant_set, false_positives_timeout, false_positives_error
         subprocess.run(
             [sys.executable, "-m", "cosmic_ray.cli", "exec_batch", COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION],
             capture_output=True,
@@ -148,10 +153,13 @@ def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set
     except Exception as e:
         print(f"Unexpected error: {e}")
     print("Mutation testing ended.")
-    kill_count, mutant_set = get_mutation_test_results_from_db(mutant_set)
+    kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
+        mutant_set)
     print(f"{kill_count} killed mutants out of {len(mutant_set)}")
     print(f"Mutation score: {kill_count / len(mutant_set) * 100:.2f}%")
-    return kill_count, mutant_set
+    print(f"Timeout false positives: {false_positives_timeout}")
+    print(f"System under test error false positives: {false_positives_error}")
+    return kill_count, mutant_set, false_positives_timeout, false_positives_error
 
 
 def filter_killable_mutants(coverage):
@@ -174,8 +182,10 @@ def get_killable_mutation_specs_from_db():
     cursor = conn.cursor()
     cursor.execute("""
                    SELECT module_path, start_pos_row, ms.job_id
-                   FROM mutation_specs ms LEFT JOIN work_results wr ON ms.job_id = wr.job_id
-                   WHERE wr.job_id IS NULL OR wr.test_outcome != 'KILLED'
+                   FROM mutation_specs ms
+                            LEFT JOIN work_results wr ON ms.job_id = wr.job_id
+                   WHERE wr.job_id IS NULL
+                      OR wr.test_outcome != 'KILLED'
                    """)
     result = list(cursor.fetchall())
     conn.close()
@@ -221,13 +231,25 @@ def get_mutation_test_results_from_db(mutant_set):
     cursor = conn.cursor()
     cursor.execute("SELECT job_id, test_outcome FROM work_results WHERE worker_outcome != 'SKIPPED'")
     result = list(cursor.fetchall())
-    conn.close()
     killed = 0
     for record in result:
         mutant_set.add(record[0])
         if record[1] == "KILLED":
             killed += 1
-    return killed, mutant_set
+    cursor.execute("""
+                   SELECT count(*)
+                   FROM work_results
+                   WHERE test_outcome = 'KILLED' AND output = 'timeout'
+                   """)
+    false_positives_timeout = int(cursor.fetchone()[0])
+    cursor.execute("""
+                   SELECT count(*)
+                   FROM work_results
+                   WHERE test_outcome = 'KILLED' AND output LIKE '%zeeguu\\core\\nlp_pipeline\\automatic_gec_tagging.py:%'
+                   """)
+    false_positives_error = int(cursor.fetchone()[0])
+    conn.close()
+    return killed, mutant_set, false_positives_timeout, false_positives_error
 
 
 def clear_skipped_and_survived_mutants():
