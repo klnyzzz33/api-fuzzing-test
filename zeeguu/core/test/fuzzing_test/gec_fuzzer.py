@@ -1,5 +1,8 @@
+import json
+import os
 import random
 import subprocess
+from datetime import datetime
 from typing import Tuple, List, Any
 
 from fuzzingbook.Fuzzer import Runner, PrintRunner
@@ -102,3 +105,13 @@ class CountingGreyboxFuzzer(GecGreyboxFuzzer):
         else:
             self.schedule.path_frequency[path_id] += 1
         return result, outcome, coverage_increased
+
+    def save_population(self):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        path = "zeeguu/core/test/fuzzing_test/results"
+        filename = f"{path}/corpus-{timestamp}.json"
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        with open(filename, "w") as f:
+            json.dump([str(member) for member in self.population], f, indent=2)

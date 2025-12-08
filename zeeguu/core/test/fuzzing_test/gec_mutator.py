@@ -9,9 +9,14 @@ class GecMutator(Mutator):
         super().__init__()
         self.insert_dictionary = insert_dictionary
         self.replace_dictionary = replace_dictionary
-        self.mutators.append(self.insert_from_dictionary)
-        self.mutators.append(self.switch_words)
-        self.mutators.append(self.replace_word)
+
+        self.mutators = [
+            self.delete_random_character,
+            self.insert_random_character,
+            self.insert_from_dictionary,
+            self.switch_words,
+            self.replace_word
+        ]
 
     def insert_from_dictionary(self, s: str) -> str:
         tokens = s.split()

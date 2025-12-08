@@ -4,6 +4,7 @@ import os
 import sqlite3
 import subprocess
 import sys
+import time
 from typing import List
 
 from fuzzingbook.Grammars import Grammar
@@ -107,8 +108,12 @@ def test_gec_tagging_labels(test_env):
     mutant_set = set()
     false_positives_timeout = 0
     false_positives_error = 0
-    trials = 100
-    for i in range(trials):
+
+    max_seconds = 10
+    end_time = time.time() + max_seconds
+
+    i = 0
+    while time.time() < end_time:
         result, _, coverage_increased = fuzzer.run(runner)
         print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         if not coverage_increased:
@@ -121,7 +126,9 @@ def test_gec_tagging_labels(test_env):
                 fuzzer.add_to_population(seed)
             clear_skipped_and_survived_mutants()
             reset_sut_source_code()
+        i += 1
         print()
+    fuzzer.save_population()
     print("Fuzzing loop ended.")
     print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
     print(f"Mutants killed: {total_kill_count} out of {len(mutant_set)}")
@@ -245,7 +252,8 @@ def get_mutation_test_results_from_db(mutant_set):
     cursor.execute("""
                    SELECT count(*)
                    FROM work_results
-                   WHERE test_outcome = 'KILLED' AND output LIKE '%zeeguu\\core\\nlp_pipeline\\automatic_gec_tagging.py:%'
+                   WHERE test_outcome = 'KILLED'
+                     AND output LIKE '%zeeguu\\core\\nlp_pipeline\\automatic_gec_tagging.py:%'
                    """)
     false_positives_error = int(cursor.fetchone()[0])
     conn.close()
