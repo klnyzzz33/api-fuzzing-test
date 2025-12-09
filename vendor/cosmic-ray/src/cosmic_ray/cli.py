@@ -16,9 +16,6 @@ from contextlib import contextmanager, redirect_stdout
 from pathlib import Path
 
 import click
-from exit_codes import ExitCode
-from rich.logging import RichHandler
-
 import cosmic_ray.commands
 import cosmic_ray.distribution.http
 import cosmic_ray.modules
@@ -30,6 +27,8 @@ from cosmic_ray.progress import report_progress
 from cosmic_ray.version import __version__
 from cosmic_ray.work_db import WorkDB, use_db
 from cosmic_ray.work_item import MutationSpec, TestOutcome, WorkItem
+from exit_codes import ExitCode
+from rich.logging import RichHandler
 
 log = logging.getLogger()
 
@@ -134,6 +133,22 @@ def handle_exec_batch(config_file, session_file):
         work_db.set_batch_size(cfg.mutant_batch_size)
         cosmic_ray.commands.execute_batch(work_db, cfg)
     sys.exit(ExitCode.OK)
+
+
+def handle_exec_inprocess(config_file, session_file):
+    cfg = load_config(config_file)
+
+    with use_db(session_file, mode=WorkDB.Mode.open) as work_db:
+        work_db.set_batch_size(cfg.mutant_batch_size)
+        cosmic_ray.commands.execute_inprocess(work_db, cfg)
+
+
+def handle_exec_inprocess_batch(config_file, session_file):
+    cfg = load_config(config_file)
+
+    with use_db(session_file, mode=WorkDB.Mode.open) as work_db:
+        work_db.set_batch_size(cfg.mutant_batch_size)
+        cosmic_ray.commands.execute_inprocess_batch(work_db, cfg)
 
 
 @cli.command()

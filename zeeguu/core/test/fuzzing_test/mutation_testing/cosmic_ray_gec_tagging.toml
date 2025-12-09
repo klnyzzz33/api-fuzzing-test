@@ -1,9 +1,11 @@
 [cosmic-ray]
 module-path = "zeeguu/core/nlp_pipeline/automatic_gec_tagging.py"
-timeout = 10.0
+module-name = "zeeguu.core.nlp_pipeline.automatic_gec_tagging"
+test-module-name = "zeeguu.core.test.fuzzing_test.test_gec_mutation_bridge"
+test-function-name = "test_gec_cosmic_ray_bridge"
+timeout = 2.0
 excluded-modules = []
-test-command = "pytest zeeguu/core/test/fuzzing_test/test_gec_mutation_bridge.py -x -vv"
-mutant-batch-size = 5
+mutant-batch-size = 100
 
 [cosmic-ray.distributor]
 name = "local"

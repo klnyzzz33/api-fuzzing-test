@@ -68,9 +68,24 @@ class ConfigDict(dict):
         return d
 
     @property
+    def module_name(self):
+        """The system under test's module name."""
+        return self["module-name"] if "module-name" in self else ""
+
+    @property
+    def test_module_name(self):
+        """The test suite's module name."""
+        return self["test-module-name"] if "test-module-name" in self else ""
+
+    @property
+    def test_function_name(self):
+        """The function to execute in the test suite module."""
+        return self["test-function-name"] if "test-function-name" in self else ""
+
+    @property
     def test_command(self):
         """The command to run to execute tests."""
-        return self["test-command"]
+        return self["test-command"] if "test-command" in self else ""
 
     @property
     def timeout(self):

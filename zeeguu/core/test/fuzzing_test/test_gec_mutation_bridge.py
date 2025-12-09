@@ -1,7 +1,11 @@
 import json
 import os
 
+import zeeguu.core.nlp_pipeline.automatic_gec_tagging as agt_module
+from zeeguu.core.nlp_pipeline.spacy_wrapper import SpacyWrapper
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import MUTATION_BRIDGE_FILE_PATH
+
+SPACY_EN_MODEL = SpacyWrapper("english", False, True)
 
 
 def test_gec_cosmic_ray_bridge():
@@ -14,12 +18,8 @@ def test_gec_cosmic_ray_bridge():
     original_sentence = mutation_bridge["ORIGINAL_SENTENCE"]
     mutated_sentence = mutation_bridge["MUTATED_SENTENCE"]
     expected = mutation_bridge["EXPECTED_OUTPUT"]
-    print(f"\nORIGINAL_SENTENCE: {original_sentence}")
-    print(f"MUTATED_SENTENCE: {mutated_sentence}")
-    print(f"EXPECTED_OUTPUT: {expected}\n")
 
-    from zeeguu.core.nlp_pipeline import AutoGECTagging, SPACY_EN_MODEL
-    agt = AutoGECTagging(SPACY_EN_MODEL, 'en')
+    agt = agt_module.AutoGECTagging(SPACY_EN_MODEL, 'en')
     user_tokens = mutated_sentence.split(" ")
     word_dict_list = [{"word": w, "isInSentence": True} for w in user_tokens]
     assert agt.anottate_clues(word_dict_list, original_sentence) == expected

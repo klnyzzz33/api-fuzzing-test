@@ -2,11 +2,10 @@ import inspect
 import json
 import os
 import sqlite3
-import subprocess
-import sys
 import time
 from typing import List
 
+from cosmic_ray.cli import handle_exec_inprocess_batch
 from fuzzingbook.Grammars import Grammar
 from fuzzingbook.GreyboxFuzzer import AFLFastSchedule, Seed
 from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
@@ -109,7 +108,7 @@ def test_gec_tagging_labels(test_env):
     false_positives_timeout = 0
     false_positives_error = 0
 
-    max_seconds = 10
+    max_seconds = 100
     end_time = time.time() + max_seconds
 
     i = 0
@@ -145,18 +144,11 @@ def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set
         print("Coverage not increased. Starting mutation testing...")
         candidate_mutations = filter_killable_mutants(coverage)
         if not candidate_mutations:
-            print("Nothing to test, skipping mutation testing.")
+            print("Nothing to test in current iteration, skipping mutation testing.")
             kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
                 mutant_set)
             return kill_count, mutant_set, false_positives_timeout, false_positives_error
-        subprocess.run(
-            [sys.executable, "-m", "cosmic_ray.cli", "exec_batch", COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION],
-            capture_output=True,
-            text=True,
-            cwd=os.path.abspath(".")
-        )
-    except subprocess.TimeoutExpired:
-        ...
+        handle_exec_inprocess_batch(COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION)
     except Exception as e:
         print(f"Unexpected error: {e}")
     print("Mutation testing ended.")
@@ -189,10 +181,8 @@ def get_killable_mutation_specs_from_db():
     cursor = conn.cursor()
     cursor.execute("""
                    SELECT module_path, start_pos_row, ms.job_id
-                   FROM mutation_specs ms
-                            LEFT JOIN work_results wr ON ms.job_id = wr.job_id
-                   WHERE wr.job_id IS NULL
-                      OR wr.test_outcome != 'KILLED'
+                   FROM mutation_specs ms LEFT JOIN work_results wr ON ms.job_id = wr.job_id
+                   WHERE wr.job_id IS NULL OR wr.test_outcome != 'KILLED'
                    """)
     result = list(cursor.fetchall())
     conn.close()
@@ -252,8 +242,7 @@ def get_mutation_test_results_from_db(mutant_set):
     cursor.execute("""
                    SELECT count(*)
                    FROM work_results
-                   WHERE test_outcome = 'KILLED'
-                     AND output LIKE '%zeeguu\\core\\nlp_pipeline\\automatic_gec_tagging.py:%'
+                   WHERE test_outcome = 'KILLED' AND output LIKE '%zeeguu\\core\\nlp_pipeline\\automatic_gec_tagging.py:%'
                    """)
     false_positives_error = int(cursor.fetchone()[0])
     conn.close()

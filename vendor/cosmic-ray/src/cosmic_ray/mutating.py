@@ -11,7 +11,7 @@ from pathlib import Path
 
 import cosmic_ray.plugins
 from cosmic_ray.ast import Visitor, get_ast
-from cosmic_ray.testing import run_tests
+from cosmic_ray.testing import run_tests, run_tests_inprocess
 from cosmic_ray.util import read_python_source, restore_contents
 from cosmic_ray.work_item import MutationSpec, TestOutcome, WorkResult, WorkerOutcome
 
@@ -73,6 +73,55 @@ def mutate_and_test(mutations: Iterable[MutationSpec], test_command, timeout) ->
                 file_changes[mutation.module_path] = original_code, mutated_code
 
             test_outcome, output = run_tests(test_command, timeout)
+
+            diffs = [
+                _make_diff(original_code, mutated_code, module_path)
+                for module_path, (original_code, mutated_code) in file_changes.items()
+            ]
+
+            result = WorkResult(
+                output=output,
+                diff="\n".join(chain(*diffs)),
+                test_outcome=test_outcome,
+                worker_outcome=WorkerOutcome.NORMAL,
+            )
+
+    except Exception:  # noqa # pylint: disable=broad-except
+        return WorkResult(
+            output=traceback.format_exc(), test_outcome=TestOutcome.INCOMPETENT, worker_outcome=WorkerOutcome.EXCEPTION
+        )
+
+    return result
+
+
+# pylint: disable=R0913
+def mutate_and_test_inprocess(mutations: Iterable[MutationSpec], sut_module_name, test_module_name, test_function_name,
+                    timeout) -> WorkResult:
+    try:
+        with contextlib.ExitStack() as stack:
+            file_changes: dict[Path, tuple[str, str]] = {}
+            for mutation in mutations:
+                operator_class = cosmic_ray.plugins.get_operator(mutation.operator_name)
+                try:
+                    operator_args = mutation.operator_args
+                except AttributeError:
+                    operator_args = {}
+                operator = operator_class(**operator_args)
+
+                (previous_code, mutated_code) = stack.enter_context(
+                    use_mutation(mutation.module_path, operator, mutation.occurrence)
+                )
+
+                # If there's no mutated code, then no mutation was possible.
+                if mutated_code is None:
+                    return WorkResult(
+                        worker_outcome=WorkerOutcome.NO_TEST,
+                    )
+
+                original_code, _ = file_changes.get(mutation.module_path, (previous_code, mutated_code))
+                file_changes[mutation.module_path] = original_code, mutated_code
+
+            test_outcome, output = run_tests_inprocess(sut_module_name, test_module_name, test_function_name, timeout)
 
             diffs = [
                 _make_diff(original_code, mutated_code, module_path)
@@ -215,11 +264,11 @@ class MutationVisitor(Visitor):
 def _make_diff(original_source, mutated_source, module_path):
     module_diff = ["--- mutation diff ---"]
     for line in difflib.unified_diff(
-        original_source.split("\n"),
-        mutated_source.split("\n"),
-        fromfile="a" + str(module_path),
-        tofile="b" + str(module_path),
-        lineterm="",
+            original_source.split("\n"),
+            mutated_source.split("\n"),
+            fromfile="a" + str(module_path),
+            tofile="b" + str(module_path),
+            lineterm="",
     ):
         module_diff.append(line)
     return module_diff
