@@ -242,9 +242,9 @@ def get_mutation_test_results_from_db(mutant_set):
     cursor.execute("""
                    SELECT count(*)
                    FROM work_results
-                   WHERE test_outcome = 'KILLED' AND output LIKE '%zeeguu\\core\\nlp_pipeline\\automatic_gec_tagging.py:%'
+                   WHERE test_outcome = 'KILLED' AND output NOT LIKE '%SUT return value:%'
                    """)
-    false_positives_error = int(cursor.fetchone()[0])
+    false_positives_error = int(cursor.fetchone()[0]) - false_positives_timeout
     conn.close()
     return killed, mutant_set, false_positives_timeout, false_positives_error
 

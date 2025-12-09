@@ -22,4 +22,6 @@ def test_gec_cosmic_ray_bridge():
     agt = agt_module.AutoGECTagging(SPACY_EN_MODEL, 'en')
     user_tokens = mutated_sentence.split(" ")
     word_dict_list = [{"word": w, "isInSentence": True} for w in user_tokens]
-    assert agt.anottate_clues(word_dict_list, original_sentence) == expected
+    actual = agt.anottate_clues(word_dict_list, original_sentence)
+    print(f"SUT return value: {actual}\n")
+    assert actual == expected
