@@ -52,6 +52,7 @@ diagrams/*.json
 /zeeguu/core/test/fuzzing_test/mutation_testing/mutation_bridge.json
 /zeeguu/core/test/fuzzing_test/mutation_testing/cosmic_ray_gec_tagging.sqlite
 /zeeguu/core/test/fuzzing_test/mutation_testing/report.html
+/zeeguu/core/test/fuzzing_test/results/
 
 /vendor/cosmic-ray/build/
 /vendor/cosmic-ray/dist/
