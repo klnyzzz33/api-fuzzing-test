@@ -7,10 +7,10 @@ from typing import List
 
 from cosmic_ray.cli import handle_exec_inprocess_batch
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.GreyboxFuzzer import AFLFastSchedule, Seed
+from fuzzingbook.GreyboxFuzzer import AFLFastSchedule, Seed, PowerSchedule
 from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 
-from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer
+from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer, UnguidedFuzzer
 from zeeguu.core.test.fuzzing_test.gec_generate_seed import gec_generate_seed
 from zeeguu.core.test.fuzzing_test.gec_mutator import GecMutator
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION
@@ -89,7 +89,6 @@ POWER_SCHEDULE = AFLFastSchedule(5)
 
 def test_gec_tagging_labels(test_env):
     original_sentence = gec_generate_seed(grammar=GEC_INPUT_GRAMMAR)
-    seeds = [original_sentence]
     print(f"\nOriginal sentence: {original_sentence}\n")
 
     def annotate_clues_wrapper(mutated_sentence: str):
@@ -99,22 +98,55 @@ def test_gec_tagging_labels(test_env):
         word_dictionary_list = [{"word": w, "isInSentence": True} for w in user_tokens]
         return agt.anottate_clues(word_dictionary_list, original_sentence)
 
-    runner = FunctionCoverageRunner(annotate_clues_wrapper)
-    fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
+    max_seconds = 40
 
-    print("Starting fuzzing loop...\n")
+    unguided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
+    coverage_guided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
+    mutation_guided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
+
+
+def unguided_fuzz(method, original_sentence, max_seconds):
+    seeds = [original_sentence]
+    runner = FunctionCoverageRunner(method)
+    fuzzer = UnguidedFuzzer(seeds, MUTATOR, PowerSchedule())
+    i = 0
+    end_time = time.time() + max_seconds
+    while time.time() < end_time:
+        result, _ = fuzzer.run(runner)
+        print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
+        i += 1
+    fuzzer.save_population('unguided')
+    print("Fuzzing loop ended.")
+
+
+def coverage_guided_fuzz(method, original_sentence, max_seconds):
+    seeds = [original_sentence]
+    runner = FunctionCoverageRunner(method)
+    fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
+    i = 0
+    end_time = time.time() + max_seconds
+    while time.time() < end_time:
+        result, _, coverage_increased = fuzzer.run(runner)
+        print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
+        i += 1
+    fuzzer.save_population('coverage-guided')
+    print("Fuzzing loop ended.")
+    print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
+
+
+def mutation_guided_fuzz(method, original_sentence, max_seconds):
+    seeds = [original_sentence]
+    runner = FunctionCoverageRunner(method)
+    fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
     total_kill_count = 0
     mutant_set = set()
     false_positives_timeout = 0
     false_positives_error = 0
-
-    max_seconds = 100
-    end_time = time.time() + max_seconds
-
     i = 0
+    end_time = time.time() + max_seconds
     while time.time() < end_time:
         result, _, coverage_increased = fuzzer.run(runner)
-        print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
+        print(f"\nFuzzing iteration #{i + 1} input: {fuzzer.inp}")
         if not coverage_increased:
             kill_count, mutant_set, false_positives_timeout, false_positives_error = run_mutation_tests(
                 original_sentence, fuzzer.inp, result, mutant_set, runner.coverage())
@@ -126,8 +158,7 @@ def test_gec_tagging_labels(test_env):
             clear_skipped_and_survived_mutants()
             reset_sut_source_code()
         i += 1
-        print()
-    fuzzer.save_population()
+    fuzzer.save_population('mutation-guided')
     print("Fuzzing loop ended.")
     print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
     print(f"Mutants killed: {total_kill_count} out of {len(mutant_set)}")
@@ -181,8 +212,10 @@ def get_killable_mutation_specs_from_db():
     cursor = conn.cursor()
     cursor.execute("""
                    SELECT module_path, start_pos_row, ms.job_id
-                   FROM mutation_specs ms LEFT JOIN work_results wr ON ms.job_id = wr.job_id
-                   WHERE wr.job_id IS NULL OR wr.test_outcome != 'KILLED'
+                   FROM mutation_specs ms
+                            LEFT JOIN work_results wr ON ms.job_id = wr.job_id
+                   WHERE wr.job_id IS NULL
+                      OR wr.test_outcome != 'KILLED'
                    """)
     result = list(cursor.fetchall())
     conn.close()

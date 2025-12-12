@@ -58,6 +58,16 @@ class AdvancedMutationFuzzer(Fuzzer):
         self.inputs.append(self.inp)
         return self.inp
 
+    def save_population(self, prefix: str) -> None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        path = "zeeguu/core/test/fuzzing_test/results"
+        filename = f"{path}/{prefix}-corpus-{timestamp}.json"
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        with open(filename, "w") as f:
+            json.dump([str(member) for member in self.population], f, indent=2)
+
 
 class GecGreyboxFuzzer(AdvancedMutationFuzzer):
     def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule, max_population=100):
@@ -91,6 +101,25 @@ class GecGreyboxFuzzer(AdvancedMutationFuzzer):
             self.add_to_population(seed)
         return result, outcome, coverage_increased
 
+class UnguidedFuzzer(AdvancedMutationFuzzer):
+    def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule, max_population=100):
+        super().__init__(seeds, mutator, schedule)
+        self.max_population = max_population
+
+    def reset(self):
+        super().reset()
+        self.population = []
+
+    def add_to_population(self, seed: Seed):
+        if len(self.population) < self.max_population:
+            self.population.append(seed)
+
+    def run(self, runner: FunctionCoverageRunner) -> Tuple[subprocess.CompletedProcess, Outcome]:
+        result, outcome = super().run(runner)
+        seed = Seed(self.inp)
+        self.add_to_population(seed)
+        return result, outcome
+
 
 class CountingGreyboxFuzzer(GecGreyboxFuzzer):
     def reset(self):
@@ -105,13 +134,3 @@ class CountingGreyboxFuzzer(GecGreyboxFuzzer):
         else:
             self.schedule.path_frequency[path_id] += 1
         return result, outcome, coverage_increased
-
-    def save_population(self):
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        path = "zeeguu/core/test/fuzzing_test/results"
-        filename = f"{path}/corpus-{timestamp}.json"
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        with open(filename, "w") as f:
-            json.dump([str(member) for member in self.population], f, indent=2)
