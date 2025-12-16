@@ -2,6 +2,7 @@ import json
 import os
 import random
 import subprocess
+from dataclasses import dataclass, asdict
 from datetime import datetime
 from typing import Tuple, List, Any
 
@@ -11,6 +12,25 @@ from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 
 Outcome = str
 
+
+@dataclass
+class TestResult:
+    original_sentence: str
+    corpus: list[str]
+    coverage: set[frozenset[tuple[str, int]]]
+
+    def to_json(self, filename: str) -> None:
+        data = asdict(self)
+        data["coverage"] = [list(cov) for cov in self.coverage]
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=2)
+
+    @staticmethod
+    def from_json(filename: str):
+        with open(filename, "r") as f:
+            data = json.load(f)
+        data["coverage"] = {frozenset(tuple(x) for x in cov) for cov in data["coverage"]}
+        return TestResult(**data)
 
 class Fuzzer:
     def __init__(self) -> None:
@@ -36,6 +56,7 @@ class AdvancedMutationFuzzer(Fuzzer):
         self.inputs: List[str] = []
         self.max_trials = 1
         self.reset()
+        self.coverages_seen = set()
 
     def reset(self) -> None:
         self.population = list(map(lambda x: Seed(x), self.seeds))
@@ -58,16 +79,16 @@ class AdvancedMutationFuzzer(Fuzzer):
         self.inputs.append(self.inp)
         return self.inp
 
-    def save_population(self, prefix: str) -> None:
+    def save_population(self, prefix: str, original_sentence: str) -> None:
+
+        result = TestResult(original_sentence=original_sentence, corpus=[str(member) for member in self.population], coverage=self.coverages_seen)
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = "zeeguu/core/test/fuzzing_test/results"
         filename = f"{path}/{prefix}-corpus-{timestamp}.json"
         if not os.path.exists(path):
             os.makedirs(path)
-
-        with open(filename, "w") as f:
-            json.dump([str(member) for member in self.population], f, indent=2)
-
+        result.to_json(filename)
 
 class GecGreyboxFuzzer(AdvancedMutationFuzzer):
     def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule, max_population=100):
@@ -116,6 +137,9 @@ class UnguidedFuzzer(AdvancedMutationFuzzer):
 
     def run(self, runner: FunctionCoverageRunner) -> Tuple[subprocess.CompletedProcess, Outcome]:
         result, outcome = super().run(runner)
+        new_coverage = frozenset(runner.coverage())
+        if new_coverage not in self.coverages_seen:
+            self.coverages_seen.add(new_coverage)
         seed = Seed(self.inp)
         self.add_to_population(seed)
         return result, outcome

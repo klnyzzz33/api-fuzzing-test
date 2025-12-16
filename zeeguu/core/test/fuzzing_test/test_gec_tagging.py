@@ -98,7 +98,7 @@ def test_gec_tagging_labels(test_env):
         word_dictionary_list = [{"word": w, "isInSentence": True} for w in user_tokens]
         return agt.anottate_clues(word_dictionary_list, original_sentence)
 
-    max_seconds = 40
+    max_seconds = 10
 
     unguided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
     coverage_guided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
@@ -115,7 +115,7 @@ def unguided_fuzz(method, original_sentence, max_seconds):
         result, _ = fuzzer.run(runner)
         print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         i += 1
-    fuzzer.save_population('unguided')
+    fuzzer.save_population('unguided', original_sentence)
     print("Fuzzing loop ended.")
 
 
@@ -129,7 +129,7 @@ def coverage_guided_fuzz(method, original_sentence, max_seconds):
         result, _, coverage_increased = fuzzer.run(runner)
         print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         i += 1
-    fuzzer.save_population('coverage-guided')
+    fuzzer.save_population('coverage-guided', original_sentence)
     print("Fuzzing loop ended.")
     print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
 
@@ -158,7 +158,7 @@ def mutation_guided_fuzz(method, original_sentence, max_seconds):
             clear_skipped_and_survived_mutants()
             reset_sut_source_code()
         i += 1
-    fuzzer.save_population('mutation-guided')
+    fuzzer.save_population('mutation-guided', original_sentence)
     print("Fuzzing loop ended.")
     print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
     print(f"Mutants killed: {total_kill_count} out of {len(mutant_set)}")
