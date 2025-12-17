@@ -85,7 +85,7 @@ class AdvancedMutationFuzzer(Fuzzer):
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = "zeeguu/core/test/fuzzing_test/results"
-        filename = f"{path}/{prefix}-corpus-{timestamp}.json"
+        filename = f"{path}/corpus-{prefix}-{timestamp}.json"
         if not os.path.exists(path):
             os.makedirs(path)
         result.to_json(filename)

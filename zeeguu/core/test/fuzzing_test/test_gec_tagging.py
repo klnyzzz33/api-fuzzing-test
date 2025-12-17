@@ -89,7 +89,7 @@ POWER_SCHEDULE = AFLFastSchedule(5)
 
 def test_gec_tagging_labels(test_env):
     original_sentence = gec_generate_seed(grammar=GEC_INPUT_GRAMMAR)
-    print(f"\nOriginal sentence: {original_sentence}\n")
+    print(f"\nOriginal sentence: {original_sentence}")
 
     def annotate_clues_wrapper(mutated_sentence: str):
         from zeeguu.core.nlp_pipeline import AutoGECTagging, SPACY_EN_MODEL
@@ -106,6 +106,7 @@ def test_gec_tagging_labels(test_env):
 
 
 def unguided_fuzz(method, original_sentence, max_seconds):
+    print("\nStarting unguided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
     fuzzer = UnguidedFuzzer(seeds, MUTATOR, PowerSchedule())
@@ -117,9 +118,11 @@ def unguided_fuzz(method, original_sentence, max_seconds):
         i += 1
     fuzzer.save_population('unguided', original_sentence)
     print("Fuzzing loop ended.")
+    print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
 
 
 def coverage_guided_fuzz(method, original_sentence, max_seconds):
+    print("\nStarting coverage-guided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
@@ -135,6 +138,7 @@ def coverage_guided_fuzz(method, original_sentence, max_seconds):
 
 
 def mutation_guided_fuzz(method, original_sentence, max_seconds):
+    print("\nStarting mutation testing-guided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
@@ -146,7 +150,7 @@ def mutation_guided_fuzz(method, original_sentence, max_seconds):
     end_time = time.time() + max_seconds
     while time.time() < end_time:
         result, _, coverage_increased = fuzzer.run(runner)
-        print(f"\nFuzzing iteration #{i + 1} input: {fuzzer.inp}")
+        print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         if not coverage_increased:
             kill_count, mutant_set, false_positives_timeout, false_positives_error = run_mutation_tests(
                 original_sentence, fuzzer.inp, result, mutant_set, runner.coverage())
@@ -175,7 +179,7 @@ def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set
         print("Coverage not increased. Starting mutation testing...")
         candidate_mutations = filter_killable_mutants(coverage)
         if not candidate_mutations:
-            print("Nothing to test in current iteration, skipping mutation testing.")
+            print("Nothing to test in current iteration, skipping mutation testing.\n")
             kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
                 mutant_set)
             return kill_count, mutant_set, false_positives_timeout, false_positives_error
@@ -188,7 +192,7 @@ def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set
     print(f"{kill_count} killed mutants out of {len(mutant_set)}")
     print(f"Mutation score: {kill_count / len(mutant_set) * 100:.2f}%")
     print(f"Timeout false positives: {false_positives_timeout}")
-    print(f"System under test error false positives: {false_positives_error}")
+    print(f"System under test error false positives: {false_positives_error}\n")
     return kill_count, mutant_set, false_positives_timeout, false_positives_error
 
 
