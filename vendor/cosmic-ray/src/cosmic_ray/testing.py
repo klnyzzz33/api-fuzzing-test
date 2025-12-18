@@ -1,13 +1,12 @@
 "Support for running tests in a subprocess."
-import _thread
 import importlib
 import logging
 import os
 import re
 import shlex
+import signal
 import subprocess
 import sys
-import threading
 import traceback
 from io import StringIO
 
@@ -72,33 +71,31 @@ def run_tests_inprocess(module_paths_to_reload, test_module_name, test_function_
     old_stderr = sys.stderr
     sys.stdout = StringIO()
     sys.stderr = StringIO()
-    timed_out = [False]
+    for mod_path in module_paths_to_reload:
+        mod_name = mod_path.replace('/', '.').replace('\\', '.').replace('.py', '')
+        sut_module = importlib.import_module(mod_name)
+        importlib.reload(sut_module)
+    test_module = importlib.import_module(test_module_name)
+    test_function = getattr(test_module, test_function_name)
 
     def timeout_handler():
-        timed_out[0] = True
-        _thread.interrupt_main()
+        raise TimeoutError("Test execution exceeded timeout")
 
-    timer = threading.Timer(timeout, timeout_handler)
-    timer.daemon = True
-    timer.start()
+    old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(int(timeout))
     try:
-        for mod_path in module_paths_to_reload:
-            mod_name = mod_path.replace('/', '.').replace('\\', '.').replace('.py', '')
-            sut_module = importlib.import_module(mod_name)
-            importlib.reload(sut_module)
-        test_module = importlib.import_module(test_module_name)
-        test_function = getattr(test_module, test_function_name)
         test_function()
-        timer.cancel()
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
         output = sys.stdout.getvalue() + sys.stderr.getvalue()
         return (TestOutcome.SURVIVED, ansi_escape.sub('', output))
-    except KeyboardInterrupt:
-        timer.cancel()
-        if timed_out[0]:
-            return (TestOutcome.KILLED, "timeout")
-        raise
+    except TimeoutError:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
+        return (TestOutcome.KILLED, "timeout")
     except Exception:
-        timer.cancel()
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
         output = sys.stdout.getvalue() + sys.stderr.getvalue() + traceback.format_exc()
         return (TestOutcome.KILLED, ansi_escape.sub('', output))
     finally:
