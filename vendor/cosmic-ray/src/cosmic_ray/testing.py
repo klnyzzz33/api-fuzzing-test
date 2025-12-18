@@ -78,7 +78,7 @@ def run_tests_inprocess(module_paths_to_reload, test_module_name, test_function_
     test_module = importlib.import_module(test_module_name)
     test_function = getattr(test_module, test_function_name)
 
-    def timeout_handler():
+    def timeout_handler(signum, frame):
         raise TimeoutError("Test execution exceeded timeout")
 
     old_handler = signal.signal(signal.SIGALRM, timeout_handler)

@@ -85,8 +85,7 @@ def run_eval(original_sentence, corpus_result_mapping, mutant_count):
         kills_before = get_mutation_kill_count_from_db()
         handle_exec_inprocess(COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION)
         new_kills = get_mutation_kill_count_from_db() - kills_before
-        print(
-            f"Input {i + 1}/{len(corpus_result_mapping)}: Killed {new_kills} mutants, {mutant_count - kills_before - new_kills} remaining")
+        print(f"Input {i + 1}/{len(corpus_result_mapping)}: Killed {new_kills} mutants, {mutant_count - kills_before - new_kills} remaining")
         clear_survived_mutants()
         reset_sut_source_code()
     return get_mutation_kill_count_from_db()

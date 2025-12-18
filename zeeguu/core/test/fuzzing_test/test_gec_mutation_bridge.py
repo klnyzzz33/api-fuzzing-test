@@ -20,4 +20,5 @@ def test_gec_cosmic_ray_bridge():
     word_dict_list = [{"word": w, "isInSentence": True} for w in user_tokens]
     actual = agt.anottate_clues(word_dict_list, original_sentence)
     print(f"SUT return value: {actual}\n")
+    print(f"Expected return value: {expected}\n")
     assert actual == expected
