@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import sys
+from dataclasses import dataclass, asdict
 
 from cosmic_ray.cli import handle_exec_inprocess
 
@@ -8,6 +9,36 @@ from zeeguu.core.test.fuzzing_test.gec_fuzzer import TestResult
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import MUTATION_BRIDGE_FILE_PATH
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import reset_gec_test, reset_sut_source_code
+
+
+@dataclass
+class EvalResult:
+    file: str
+    original_sentence: str
+    corpus_size: int
+    coverage_size: int
+    mutants_killed: int
+    mutation_score: float
+
+    def to_json(self, filename: str) -> None:
+        data = asdict(self)
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=2)
+
+    @staticmethod
+    def from_json(filename: str):
+        with open(filename, "r") as f:
+            data = json.load(f)
+        return EvalResult(**data)
+
+    def __str__(self):
+        return (
+            f"Original sentence: {self.original_sentence}\n"
+            f"Corpus size: {self.corpus_size}\n"
+            f"Coverage size (unique paths): {self.coverage_size}\n"
+            f"Mutants killed: {self.mutants_killed}\n"
+            f"Mutation score: {self.mutation_score * 100:.2f}%\n"
+        )
 
 
 def main(arguments):
@@ -18,17 +49,24 @@ def main(arguments):
 
 
 def eval_results(result_file_paths):
-    results_dir = "zeeguu/core/test/fuzzing_test/results"
+    result_dir = "zeeguu/core/test/fuzzing_test/results"
+    eval_dir = "zeeguu/core/test/fuzzing_test/evaluation"
     reset_gec_test()
     mutant_count = get_mutant_count()
     for file in result_file_paths:
-        test_result = TestResult.from_json(f"{results_dir}/{file}")
-        print(f"Original sentence: {test_result.original_sentence}")
-        print(f"Corpus size: {len(test_result.corpus_result_mapping)}")
-        print(f"Coverage size (unique paths): {len(test_result.coverage)}")
+        result_file_name = f"{result_dir}/{file}"
+        eval_file_name = f"{eval_dir}/{file}"
+        test_result = TestResult.from_json(result_file_name)
         kill_count = run_eval(test_result.original_sentence, test_result.corpus_result_mapping, mutant_count)
-        print(f"Mutants killed: {kill_count}")
-        print(f"Mutation score: {kill_count / mutant_count * 100:.2f}%\n")
+
+        eval_result = EvalResult(file=result_file_name,
+                                 original_sentence=test_result.original_sentence,
+                                 corpus_size=len(test_result.corpus_result_mapping),
+                                 coverage_size=len(test_result.coverage),
+                                 mutants_killed=kill_count,
+                                 mutation_score=kill_count / mutant_count)
+        eval_result.to_json(eval_file_name)
+        print(eval_result)
         reset_gec_test()
 
 
