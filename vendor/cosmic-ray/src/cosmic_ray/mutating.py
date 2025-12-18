@@ -96,10 +96,11 @@ def mutate_and_test(mutations: Iterable[MutationSpec], test_command, timeout) ->
 
 # pylint: disable=R0913
 def mutate_and_test_inprocess(mutations: Iterable[MutationSpec], sut_module_name, test_module_name, test_function_name,
-                    timeout) -> WorkResult:
+                              timeout) -> WorkResult:
     try:
         with contextlib.ExitStack() as stack:
             file_changes: dict[Path, tuple[str, str]] = {}
+            mutated_module_paths = []
             for mutation in mutations:
                 operator_class = cosmic_ray.plugins.get_operator(mutation.operator_name)
                 try:
@@ -120,8 +121,10 @@ def mutate_and_test_inprocess(mutations: Iterable[MutationSpec], sut_module_name
 
                 original_code, _ = file_changes.get(mutation.module_path, (previous_code, mutated_code))
                 file_changes[mutation.module_path] = original_code, mutated_code
+                mutated_module_paths.append(str(mutation.module_path))
 
-            test_outcome, output = run_tests_inprocess(sut_module_name, test_module_name, test_function_name, timeout)
+            test_outcome, output = run_tests_inprocess(mutated_module_paths, test_module_name, test_function_name,
+                                                       timeout)
 
             diffs = [
                 _make_diff(original_code, mutated_code, module_path)
