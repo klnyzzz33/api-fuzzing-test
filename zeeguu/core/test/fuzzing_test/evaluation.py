@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import sys
 from dataclasses import dataclass, asdict
@@ -45,12 +46,16 @@ def main(arguments):
     if len(arguments) != 4:
         print(f"Usage: python {sys.argv[0]} result_file_1 result_file_2 result_file_3")
     result_file_name = arguments[1:4]
-    eval_results(result_file_name)
-
-
-def eval_results(result_file_paths):
     result_dir = "zeeguu/core/test/fuzzing_test/results"
     eval_dir = "zeeguu/core/test/fuzzing_test/evaluation"
+    if not os.path.exists(result_dir):
+        os.makedirs(result_dir)
+    if not os.path.exists(eval_dir):
+        os.makedirs(eval_dir)
+    eval_results(result_file_name, result_dir, eval_dir)
+
+
+def eval_results(result_file_paths, result_dir, eval_dir):
     reset_gec_test()
     mutant_count = get_mutant_count()
     for file in result_file_paths:
@@ -58,7 +63,6 @@ def eval_results(result_file_paths):
         eval_file_name = f"{eval_dir}/{file}"
         test_result = TestResult.from_json(result_file_name)
         kill_count = run_eval(test_result.original_sentence, test_result.corpus_result_mapping, mutant_count)
-
         eval_result = EvalResult(file=result_file_name,
                                  original_sentence=test_result.original_sentence,
                                  corpus_size=len(test_result.corpus_result_mapping),

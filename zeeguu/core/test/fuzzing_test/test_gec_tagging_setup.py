@@ -7,13 +7,13 @@ import pytest
 import requests_mock
 from sqlalchemy.exc import SAWarning
 
-import zeeguu.core.nlp_pipeline.automatic_gec_tagging
+import zeeguu.core.nlp_pipeline
 from zeeguu.api.app import create_app
 from zeeguu.api.test.fixtures import add_context_types, add_source_types
 from zeeguu.core.model.db import db
 from zeeguu.core.test.mocking_the_web import mock_requests_get
 
-SYSTEM_UNDER_TEST_PATH = zeeguu.core.nlp_pipeline.automatic_gec_tagging.__file__
+SYSTEM_UNDER_TEST_PATH = os.path.dirname(zeeguu.core.nlp_pipeline.__file__)
 MUTATION_TESTING_DIR = "zeeguu/core/test/fuzzing_test/mutation_testing"
 MUTATION_BRIDGE_FILE_PATH = f"{MUTATION_TESTING_DIR}/mutation_bridge.json"
 COSMIC_RAY_CONFIG = f"{MUTATION_TESTING_DIR}/cosmic_ray_gec_tagging.toml"
