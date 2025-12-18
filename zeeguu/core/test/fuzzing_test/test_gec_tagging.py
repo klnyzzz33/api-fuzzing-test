@@ -1,6 +1,8 @@
+import importlib
 import inspect
 import json
 import os
+import pkgutil
 import sqlite3
 import time
 from typing import List
@@ -13,7 +15,7 @@ from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer, UnguidedFuzzer, Seed
 from zeeguu.core.test.fuzzing_test.gec_generate_seed import gec_generate_seed
 from zeeguu.core.test.fuzzing_test.gec_mutator import GecMutator
-from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION
+from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import COSMIC_RAY_SESSION, COSMIC_RAY_CONFIG
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import reset_sut_source_code
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import test_env, MUTATION_BRIDGE_FILE_PATH
 
@@ -234,15 +236,28 @@ def get_coverage_with_module_names(coverage):
 
 
 def get_sut_method_module_mapping():
-    from zeeguu.core.nlp_pipeline import AutoGECTagging
+    import zeeguu.core.nlp_pipeline as sut_package
     mapping = {}
-    for method_name, method in inspect.getmembers(AutoGECTagging, predicate=inspect.isfunction):
-        module_path = os.path.relpath(inspect.getfile(method))
-        source_lines, start_line = inspect.getsourcelines(method)
-        for i in range(len(source_lines)):
-            func_line = start_line + i
-            mapping[(method_name, func_line)] = module_path
+    sut_package_path = os.path.dirname(sut_package.__file__)
+    sut_package_name = sut_package.__name__
+    for _, module_name, _ in pkgutil.walk_packages([sut_package_path], prefix=f'{sut_package_name}.'):
+        module = importlib.import_module(module_name)
+        module_path = os.path.relpath(inspect.getfile(module))
+        extract_function_mappings(module, mapping, module_name, module_path)
+        for class_name, cls in inspect.getmembers(module, predicate=inspect.isclass):
+            if cls.__module__ == module_name:
+                extract_function_mappings(cls, mapping, module_name, module_path)
     return mapping
+
+
+def extract_function_mappings(obj, mapping, module_name, module_path):
+    for method_name, method in inspect.getmembers(obj, predicate=lambda x: inspect.isfunction(x)
+                                                                           or inspect.ismethod(x)):
+        if method.__module__ == module_name:
+            source_lines, start_line = inspect.getsourcelines(method)
+            for i in range(len(source_lines)):
+                func_line = start_line + i
+                mapping[(method_name, func_line)] = module_path
 
 
 def insert_skipped_work_results(job_ids):

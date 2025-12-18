@@ -68,11 +68,6 @@ class ConfigDict(dict):
         return d
 
     @property
-    def module_name(self):
-        """The system under test's module name."""
-        return self["module-name"] if "module-name" in self else ""
-
-    @property
     def test_module_name(self):
         """The test suite's module name."""
         return self["test-module-name"] if "test-module-name" in self else ""

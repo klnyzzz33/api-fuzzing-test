@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from contextlib import contextmanager
 from itertools import chain
 from pathlib import Path
+from typing import Tuple
 
 import cosmic_ray.plugins
 from cosmic_ray.ast import Visitor, get_ast
@@ -95,12 +96,12 @@ def mutate_and_test(mutations: Iterable[MutationSpec], test_command, timeout) ->
 
 
 # pylint: disable=R0913
-def mutate_and_test_inprocess(mutations: Iterable[MutationSpec], sut_module_name, test_module_name, test_function_name,
-                              timeout) -> WorkResult:
+def mutate_and_test_inprocess(mutations: Iterable[MutationSpec], prev_mutated, test_module_name, test_function_name,
+                              timeout) -> Tuple[WorkResult, set[str]]:
+    now_mutated: set[str] = set()
     try:
         with contextlib.ExitStack() as stack:
             file_changes: dict[Path, tuple[str, str]] = {}
-            mutated_module_paths = []
             for mutation in mutations:
                 operator_class = cosmic_ray.plugins.get_operator(mutation.operator_name)
                 try:
@@ -115,15 +116,19 @@ def mutate_and_test_inprocess(mutations: Iterable[MutationSpec], sut_module_name
 
                 # If there's no mutated code, then no mutation was possible.
                 if mutated_code is None:
-                    return WorkResult(
-                        worker_outcome=WorkerOutcome.NO_TEST,
+                    return (
+                        WorkResult(
+                            worker_outcome=WorkerOutcome.NO_TEST,
+                        ),
+                        now_mutated
                     )
 
                 original_code, _ = file_changes.get(mutation.module_path, (previous_code, mutated_code))
                 file_changes[mutation.module_path] = original_code, mutated_code
-                mutated_module_paths.append(str(mutation.module_path))
+                now_mutated.add(str(mutation.module_path))
 
-            test_outcome, output = run_tests_inprocess(mutated_module_paths, test_module_name, test_function_name,
+            module_paths_to_reload = prev_mutated.union(now_mutated)
+            test_outcome, output = run_tests_inprocess(module_paths_to_reload, test_module_name, test_function_name,
                                                        timeout)
 
             diffs = [
@@ -139,11 +144,15 @@ def mutate_and_test_inprocess(mutations: Iterable[MutationSpec], sut_module_name
             )
 
     except Exception:  # noqa # pylint: disable=broad-except
-        return WorkResult(
-            output=traceback.format_exc(), test_outcome=TestOutcome.INCOMPETENT, worker_outcome=WorkerOutcome.EXCEPTION
+        return (
+            WorkResult(
+                output=traceback.format_exc(), test_outcome=TestOutcome.INCOMPETENT,
+                worker_outcome=WorkerOutcome.EXCEPTION
+            ),
+            now_mutated
         )
 
-    return result
+    return result, now_mutated
 
 
 @contextmanager

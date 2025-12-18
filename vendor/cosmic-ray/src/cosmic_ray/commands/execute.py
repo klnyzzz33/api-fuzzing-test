@@ -87,10 +87,11 @@ def execute_inprocess(work_db, config: ConfigDict):
     log.info("Beginning execution")
 
     pending_work = work_db.pending_work_items
+    prev_mutated = set()
     for work_item in pending_work:
-        result = mutate_and_test_inprocess(
+        result, prev_mutated = mutate_and_test_inprocess(
             mutations=work_item.mutations,
-            sut_module_name=config.module_name,
+            prev_mutated=prev_mutated,
             test_module_name=config.test_module_name,
             test_function_name=config.test_function_name,
             timeout=config.timeout
@@ -108,10 +109,11 @@ def execute_inprocess_batch(work_db, config: ConfigDict):
     log.info("Beginning execution")
 
     pending_work = work_db.pending_work_items_batch
+    prev_mutated = set()
     for work_item in pending_work:
-        result = mutate_and_test_inprocess(
+        result, prev_mutated = mutate_and_test_inprocess(
             mutations=work_item.mutations,
-            sut_module_name=config.module_name,
+            prev_mutated=prev_mutated,
             test_module_name=config.test_module_name,
             test_function_name=config.test_function_name,
             timeout=config.timeout
