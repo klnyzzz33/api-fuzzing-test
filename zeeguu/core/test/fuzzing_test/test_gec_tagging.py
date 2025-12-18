@@ -94,9 +94,7 @@ def test_gec_tagging_labels(test_env):
         agt = AutoGECTagging(SPACY_EN_MODEL, 'en')
         user_tokens = mutated_sentence.split(" ")
         word_dictionary_list = [{"word": w, "isInSentence": True} for w in user_tokens]
-        print("Before")
-        result = agt.anottate_clues(word_dictionary_list, original_sentence)
-        print("After")
+        return agt.anottate_clues(word_dictionary_list, original_sentence)
 
     max_seconds = 60
 
@@ -158,7 +156,8 @@ def mutation_guided_fuzz(method, original_sentence, max_seconds):
                 total_kill_count = kill_count
                 seed = Seed(fuzzer.inp)
                 seed.coverage = runner.coverage()
-                fuzzer.add_to_population(seed, result)
+                if seed not in fuzzer.population:
+                    fuzzer.add_to_population(seed, result)
             clear_skipped_and_survived_mutants()
             reset_sut_source_code()
         i += 1

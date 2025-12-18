@@ -52,6 +52,9 @@ class Seed:
             return False
         return self.data == other.data
 
+    def __hash__(self):
+        return hash(self.data)
+
 
 class Fuzzer:
     def __init__(self) -> None:
@@ -159,9 +162,8 @@ class GecGreyboxFuzzer(AdvancedMutationFuzzer):
             min_seed_energy = min(s.energy for s in self.population)
             for i in range(len(self.population)):
                 if self.population[i].energy == min_seed_energy:
-                    old_input = self.population[i].data
+                    self.expected_results.pop(self.population[i].data)
                     self.population[i] = seed
-                    self.expected_results.pop(old_input)
                     self.expected_results[seed.data] = result
                     break
 
