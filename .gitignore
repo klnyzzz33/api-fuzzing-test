@@ -41,6 +41,7 @@ fmd.cfg
 
 lu-mir-zeeguu-credentials.json
 
+.venv/
 venv/
 api_local.cfg
 venv311_py311/
