@@ -65,7 +65,7 @@ def run_tests(command, timeout):
         return (TestOutcome.INCOMPETENT, traceback.format_exc())
 
 
-def run_tests_inprocess(sut_module_name, test_module_name, test_function_name, timeout):
+def run_tests_inprocess(mutated_module_paths, test_module_name, test_function_name, timeout):
     log.info("Running test %s (timeout=%s)", test_module_name + "." + test_function_name, timeout)
     os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
     old_stdout = sys.stdout
@@ -82,8 +82,10 @@ def run_tests_inprocess(sut_module_name, test_module_name, test_function_name, t
     timer.daemon = True
     timer.start()
     try:
-        sut_module = importlib.import_module(sut_module_name)
-        importlib.reload(sut_module)
+        for mod_path in mutated_module_paths:
+            mod_name = mod_path.replace('/', '.').replace('\\', '.').replace('.py', '')
+            sut_module = importlib.import_module(mod_name)
+            importlib.reload(sut_module)
         test_module = importlib.import_module(test_module_name)
         test_function = getattr(test_module, test_function_name)
         test_function()
