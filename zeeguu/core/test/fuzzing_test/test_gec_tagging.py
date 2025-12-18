@@ -7,10 +7,10 @@ from typing import List
 
 from cosmic_ray.cli import handle_exec_inprocess_batch
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.GreyboxFuzzer import AFLFastSchedule, Seed, PowerSchedule
+from fuzzingbook.GreyboxFuzzer import AFLFastSchedule, PowerSchedule
 from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 
-from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer, UnguidedFuzzer
+from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer, UnguidedFuzzer, Seed
 from zeeguu.core.test.fuzzing_test.gec_generate_seed import gec_generate_seed
 from zeeguu.core.test.fuzzing_test.gec_mutator import GecMutator
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION
