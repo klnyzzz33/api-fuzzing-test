@@ -139,7 +139,6 @@ def handle_exec_inprocess(config_file, session_file):
     cfg = load_config(config_file)
 
     with use_db(session_file, mode=WorkDB.Mode.open) as work_db:
-        work_db.set_batch_size(cfg.mutant_batch_size)
         cosmic_ray.commands.execute_inprocess(work_db, cfg)
 
 

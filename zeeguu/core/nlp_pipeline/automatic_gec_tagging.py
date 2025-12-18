@@ -418,12 +418,17 @@ class AutoGECTagging():
                 zeeguu_correction = annotated_errors["corrections"][i_pos]
                 # The operations will match the first operation seen for that token
                 zeeguu_operations += [(operation, span)]
+                max_merge_attempts = 10
+                merge_attempts = 0
                 while (current_err_w.strip() != word_dictionary_list[len(zeeguu_err_w)]["word"]):
-                    if i_pos != len(err_w)-1:
+                    if i_pos != len(err_w)-1 and merge_attempts < max_merge_attempts:
                         current_err_w += err_w[i_pos+1]
                         zeeguu_correction += annotated_errors["corrections"][i_pos+1]
                         i_pos += 1
                         map_spacy_to_zeeguu_i[i_pos] = len(zeeguu_err_w)
+                        merge_attempts += 1
+                    else:
+                        break
                 zeeguu_err_w.append(current_err_w)
                 zeeguu_corrections.append(zeeguu_correction)
                 i_pos += 1

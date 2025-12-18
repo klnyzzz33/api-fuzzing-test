@@ -1,5 +1,4 @@
 import json
-import os
 
 import zeeguu.core.nlp_pipeline.automatic_gec_tagging as agt_module
 from zeeguu.core.nlp_pipeline.spacy_wrapper import SpacyWrapper
@@ -9,9 +8,6 @@ SPACY_EN_MODEL = SpacyWrapper("english", False, True)
 
 
 def test_gec_cosmic_ray_bridge():
-    if not os.path.exists(MUTATION_BRIDGE_FILE_PATH):
-        raise FileNotFoundError(f"Mutation bridge file not found: {MUTATION_BRIDGE_FILE_PATH}")
-
     with open(MUTATION_BRIDGE_FILE_PATH, 'r') as f:
         mutation_bridge = json.load(f)
 

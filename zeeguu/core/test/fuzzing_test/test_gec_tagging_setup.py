@@ -36,10 +36,8 @@ def test_env():
             add_context_types()
             add_source_types()
 
-            # print("\033[92m\n===== Test case setup finished =====\n\033[0m")
             yield db
 
-            # print("\033[92m\n===== Test case teardown started =====\n\033[0m")
             db.session.close()
             db.drop_all()
             print("\033[92m\n===== Test case teardown finished =====\n\033[0m")

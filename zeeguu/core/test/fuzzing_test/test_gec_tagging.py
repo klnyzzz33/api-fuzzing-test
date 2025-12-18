@@ -84,8 +84,6 @@ GEC_REPLACE: dict[str, List[str]] = {
 
 MUTATOR = GecMutator(TERMINALS, GEC_REPLACE)
 
-POWER_SCHEDULE = AFLFastSchedule(5)
-
 
 def test_gec_tagging_labels(test_env):
     original_sentence = gec_generate_seed(grammar=GEC_INPUT_GRAMMAR)
@@ -96,9 +94,11 @@ def test_gec_tagging_labels(test_env):
         agt = AutoGECTagging(SPACY_EN_MODEL, 'en')
         user_tokens = mutated_sentence.split(" ")
         word_dictionary_list = [{"word": w, "isInSentence": True} for w in user_tokens]
-        return agt.anottate_clues(word_dictionary_list, original_sentence)
+        print("Before")
+        result = agt.anottate_clues(word_dictionary_list, original_sentence)
+        print("After")
 
-    max_seconds = 10
+    max_seconds = 60
 
     unguided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
     coverage_guided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
@@ -125,7 +125,7 @@ def coverage_guided_fuzz(method, original_sentence, max_seconds):
     print("\nStarting coverage-guided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
-    fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
+    fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, AFLFastSchedule(5))
     i = 0
     end_time = time.time() + max_seconds
     while time.time() < end_time:
@@ -141,7 +141,7 @@ def mutation_guided_fuzz(method, original_sentence, max_seconds):
     print("\nStarting mutation testing-guided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
-    fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, POWER_SCHEDULE)
+    fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, AFLFastSchedule(5))
     total_kill_count = 0
     mutant_set = set()
     false_positives_timeout = 0
@@ -158,7 +158,7 @@ def mutation_guided_fuzz(method, original_sentence, max_seconds):
                 total_kill_count = kill_count
                 seed = Seed(fuzzer.inp)
                 seed.coverage = runner.coverage()
-                fuzzer.add_to_population(seed)
+                fuzzer.add_to_population(seed, result)
             clear_skipped_and_survived_mutants()
             reset_sut_source_code()
         i += 1
@@ -216,10 +216,8 @@ def get_killable_mutation_specs_from_db():
     cursor = conn.cursor()
     cursor.execute("""
                    SELECT module_path, start_pos_row, ms.job_id
-                   FROM mutation_specs ms
-                            LEFT JOIN work_results wr ON ms.job_id = wr.job_id
-                   WHERE wr.job_id IS NULL
-                      OR wr.test_outcome != 'KILLED'
+                   FROM mutation_specs ms LEFT JOIN work_results wr ON ms.job_id = wr.job_id
+                   WHERE wr.job_id IS NULL OR wr.test_outcome != 'KILLED'
                    """)
     result = list(cursor.fetchall())
     conn.close()
@@ -289,6 +287,6 @@ def get_mutation_test_results_from_db(mutant_set):
 def clear_skipped_and_survived_mutants():
     conn = sqlite3.connect(COSMIC_RAY_SESSION)
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM work_results WHERE worker_outcome == 'SKIPPED' OR test_outcome != 'KILLED'")
+    cursor.execute("DELETE FROM work_results WHERE worker_outcome = 'SKIPPED' OR test_outcome != 'KILLED'")
     conn.commit()
     conn.close()

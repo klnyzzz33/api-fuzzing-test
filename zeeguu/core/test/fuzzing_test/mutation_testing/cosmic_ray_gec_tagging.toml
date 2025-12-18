@@ -5,7 +5,7 @@ test-module-name = "zeeguu.core.test.fuzzing_test.test_gec_mutation_bridge"
 test-function-name = "test_gec_cosmic_ray_bridge"
 timeout = 2.0
 excluded-modules = []
-mutant-batch-size = 100
+mutant-batch-size = 10
 
 [cosmic-ray.distributor]
 name = "local"
