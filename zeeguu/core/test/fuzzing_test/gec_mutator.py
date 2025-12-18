@@ -19,14 +19,15 @@ class GecMutator(Mutator):
         ]
 
     def insert_from_dictionary(self, s: str) -> str:
+        """Returns s with a randomly chosen dictionary word inserted at a random position"""
         tokens = s.split()
         pos = random.randint(0, len(tokens))
         random_keyword = random.choice(self.insert_dictionary)
         tokens.insert(pos, random_keyword)
-        # print("INSERT_FROM_DICTIONARY: " + random_keyword)
         return " ".join(tokens)
 
     def switch_words(self, s: str) -> str:
+        """Returns s with two randomly chosen words swapped"""
         tokens = s.split()
         if len(tokens) < 2:
             return s
@@ -34,11 +35,11 @@ class GecMutator(Mutator):
         pos2 = random.randint(0, len(tokens) - 1)
         while pos1 == pos2:
             pos2 = random.randint(0, len(tokens) - 1)
-        # print("SWITCH_WORDS: " + tokens[pos1] + " <-> " + tokens[pos2])
         tokens[pos1], tokens[pos2] = tokens[pos2], tokens[pos1]
         return " ".join(tokens)
 
     def replace_word(self, s: str) -> str:
+        """Returns s with a randomly selected word replaced using a predefined replacement dictionary"""
         tokens = s.split()
         keys = list(self.replace_dictionary.keys())
         chosen_keys = [k for k in keys if k in tokens]
@@ -46,6 +47,5 @@ class GecMutator(Mutator):
             return s
         chosen_key = random.choice(chosen_keys)
         random_replace = random.choice(self.replace_dictionary[chosen_key])
-        # print("REPLACE_WORD: " + tokens[tokens.index(chosen_key)] + " -> " + random_replace)
         tokens[tokens.index(chosen_key)] = random_replace
         return " ".join(tokens)
