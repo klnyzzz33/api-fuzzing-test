@@ -18,11 +18,10 @@ Outcome = str
 class TestResult:
     original_sentence: str
     corpus_result_mapping: list[dict[str, Any]]
-    coverage: set[frozenset[tuple[str, int]]]
+    coverage_size: int
 
     def to_json(self, filename: str) -> None:
         data = asdict(self)
-        data["coverage"] = [list(cov) for cov in self.coverage]
         with open(filename, "w") as f:
             json.dump(data, f, indent=2)
 
@@ -30,7 +29,6 @@ class TestResult:
     def from_json(filename: str):
         with open(filename, "r") as f:
             data = json.load(f)
-        data["coverage"] = {frozenset(tuple(x) for x in cov) for cov in data["coverage"]}
         return TestResult(**data)
 
 
@@ -109,7 +107,7 @@ class AdvancedMutationFuzzer(Fuzzer):
             original_sentence=original_sentence,
             corpus_result_mapping=[{"input": str(seed), "output": self.expected_results[seed.data]}
                                    for seed in self.population],
-            coverage=self.coverages_seen
+            coverage_size=len(self.coverages_seen)
         )
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = "zeeguu/core/test/fuzzing_test/results"

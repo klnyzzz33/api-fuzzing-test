@@ -66,7 +66,7 @@ def eval_results(result_file_paths, result_dir, eval_dir):
         eval_result = EvalResult(file=result_file_name,
                                  original_sentence=test_result.original_sentence,
                                  corpus_size=len(test_result.corpus_result_mapping),
-                                 coverage_size=len(test_result.coverage),
+                                 coverage_size=test_result.coverage_size,
                                  mutants_killed=kill_count,
                                  mutation_score=kill_count / mutant_count)
         eval_result.to_json(eval_file_name)
