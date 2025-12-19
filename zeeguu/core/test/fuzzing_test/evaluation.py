@@ -79,7 +79,6 @@ def run_eval(original_sentence, corpus_result_mapping, mutant_count):
         entry = corpus_result_mapping[i]
         input_str = entry["input"]
         output = entry["output"]
-        print(f"Iteration {i + 1}, input: {input_str}")
         with open(MUTATION_BRIDGE_FILE_PATH, 'w') as f:
             json.dump({"ORIGINAL_SENTENCE": original_sentence, "MUTATED_SENTENCE": input_str,
                        "EXPECTED_OUTPUT": output}, f)
