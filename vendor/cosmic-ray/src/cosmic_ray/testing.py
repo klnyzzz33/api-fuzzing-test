@@ -9,6 +9,9 @@ import subprocess
 import traceback
 import warnings
 
+from contextlib import redirect_stdout, redirect_stderr
+from io import StringIO
+
 from cosmic_ray.work_item import TestOutcome
 
 log = logging.getLogger(__name__)
@@ -88,11 +91,12 @@ def run_tests_inprocess(module_paths_to_reload, test_module_name, test_function_
         old_handler = signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(int(timeout))
         try:
-            result, error = test_function()
-            reset_timeout()
-            if error:
-                return (TestOutcome.KILLED, ansi_escape.sub('', f"{result}\n\n{error}"))
-            return (TestOutcome.SURVIVED, ansi_escape.sub('', result))
+            with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                result, error = test_function()
+                reset_timeout()
+                if error:
+                    return (TestOutcome.KILLED, ansi_escape.sub('', f"{result}\n\n{error}"))
+                return (TestOutcome.SURVIVED, ansi_escape.sub('', result))
         except TimeoutError:
             reset_timeout()
             return (TestOutcome.KILLED, "timeout")
