@@ -51,8 +51,8 @@ def reset_gec_test():
 
     subprocess.run(
         [sys.executable, "-m", "cosmic_ray.cli", "init", COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION, "--force"],
-        capture_output=True,
-        text=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
         cwd=os.path.abspath(".")
     )
 
@@ -60,7 +60,7 @@ def reset_gec_test():
 def reset_sut_source_code():
     subprocess.run(
         ["git", "restore", SYSTEM_UNDER_TEST_PATH],
-        capture_output=True,
-        text=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
         cwd=os.path.abspath(".")
     )
