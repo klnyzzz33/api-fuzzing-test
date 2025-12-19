@@ -6,9 +6,8 @@ import re
 import shlex
 import signal
 import subprocess
-import sys
 import traceback
-from io import StringIO
+import warnings
 
 from cosmic_ray.work_item import TestOutcome
 
@@ -67,37 +66,36 @@ def run_tests(command, timeout):
 def run_tests_inprocess(module_paths_to_reload, test_module_name, test_function_name, timeout):
     log.info("Running test %s (timeout=%s)", test_module_name + "." + test_function_name, timeout)
     os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-    sys.stdout = StringIO()
-    sys.stderr = StringIO()
-    for mod_path in module_paths_to_reload:
-        mod_name = mod_path.replace('/', '.').replace('\\', '.').replace('.py', '')
-        sut_module = importlib.import_module(mod_name)
-        importlib.reload(sut_module)
-    test_module = importlib.import_module(test_module_name)
-    test_function = getattr(test_module, test_function_name)
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            category=SyntaxWarning,
+        )
+        for mod_path in module_paths_to_reload:
+            mod_name = mod_path.replace('/', '.').replace('\\', '.').replace('.py', '')
+            sut_module = importlib.import_module(mod_name)
+            importlib.reload(sut_module)
+        test_module = importlib.import_module(test_module_name)
+        test_function = getattr(test_module, test_function_name)
 
-    def timeout_handler(signum, frame):
-        raise TimeoutError("Test execution exceeded timeout")
+        def timeout_handler(signum, frame):
+            raise TimeoutError("Test execution exceeded timeout")
+        
+        def reset_timeout():
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_handler)
 
-    old_handler = signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(int(timeout))
-    try:
-        test_function()
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, old_handler)
-        output = sys.stdout.getvalue() + sys.stderr.getvalue()
-        return (TestOutcome.SURVIVED, ansi_escape.sub('', output))
-    except TimeoutError:
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, old_handler)
-        return (TestOutcome.KILLED, "timeout")
-    except Exception:
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, old_handler)
-        output = sys.stdout.getvalue() + sys.stderr.getvalue() + traceback.format_exc()
-        return (TestOutcome.KILLED, ansi_escape.sub('', output))
-    finally:
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
+        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(int(timeout))
+        try:
+            result, error = test_function()
+            reset_timeout()
+            if error:
+                return (TestOutcome.KILLED, ansi_escape.sub('', f"{result}\n\n{error}"))
+            return (TestOutcome.SURVIVED, ansi_escape.sub('', result))
+        except TimeoutError:
+            reset_timeout()
+            return (TestOutcome.KILLED, "timeout")
+        except Exception:
+            reset_timeout()
+            return (TestOutcome.KILLED, ansi_escape.sub('', traceback.format_exc()))
