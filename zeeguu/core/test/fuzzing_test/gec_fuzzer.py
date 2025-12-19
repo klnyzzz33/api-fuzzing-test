@@ -18,6 +18,7 @@ Outcome = str
 @dataclass
 class TestResult:
     original_sentence: str
+    corpus_size: int
     corpus_result_mapping: list[dict[str, Any]]
     coverage_size: int
 
@@ -120,6 +121,7 @@ class AdvancedMutationFuzzer(Fuzzer):
     def save_population(self, postfix: str, original_sentence: str) -> None:
         result = TestResult(
             original_sentence=original_sentence,
+            corpus_size=len(self.population),
             corpus_result_mapping=[{"input": str(seed), "output": self.expected_results[seed.data]}
                                    for seed in self.population],
             coverage_size=len(self.coverages_seen)
