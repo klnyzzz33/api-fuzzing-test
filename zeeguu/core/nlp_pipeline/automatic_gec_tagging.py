@@ -426,9 +426,9 @@ class AutoGECTagging():
                         zeeguu_correction += annotated_errors["corrections"][i_pos+1]
                         i_pos += 1
                         map_spacy_to_zeeguu_i[i_pos] = len(zeeguu_err_w)
-                        merge_attempts += 1
                     else:
                         break
+                    merge_attempts += 1
                 zeeguu_err_w.append(current_err_w)
                 zeeguu_corrections.append(zeeguu_correction)
                 i_pos += 1
