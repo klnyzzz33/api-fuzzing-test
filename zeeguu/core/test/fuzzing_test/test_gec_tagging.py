@@ -111,8 +111,8 @@ def unguided_fuzz(method, original_sentence, max_iteration):
     fuzzer = UnguidedFuzzer(seeds, MUTATOR, PowerSchedule())
     i = 0
     while i < max_iteration:
-        result, _ = fuzzer.run(runner)
-        print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
+        fuzzer.run(runner)
+        if i % 500 == 0: print(f"Fuzzing iteration #{i + 1}")
         i += 1
     fuzzer.save_population('unguided', original_sentence)
     print("Fuzzing loop ended.")
@@ -126,8 +126,8 @@ def coverage_guided_fuzz(method, original_sentence, max_iteration):
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, AFLFastSchedule(5))
     i = 0
     while i < max_iteration:
-        result, _, coverage_increased = fuzzer.run(runner)
-        print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
+        fuzzer.run(runner)
+        if i % 500 == 0: print(f"Fuzzing iteration #{i + 1}")
         i += 1
     fuzzer.save_population('coverage-guided', original_sentence)
     print("Fuzzing loop ended.")
@@ -146,7 +146,7 @@ def mutation_guided_fuzz(method, original_sentence, max_iteration):
     i = 0
     while i < max_iteration:
         result, _, coverage_increased = fuzzer.run(runner)
-        print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
+        if i % 500 == 0: print(f"Fuzzing iteration #{i + 1}")
         if not coverage_increased:
             kill_count, mutant_set, false_positives_timeout, false_positives_error = run_mutation_tests(
                 original_sentence, fuzzer.inp, result, mutant_set, runner.coverage())
@@ -168,28 +168,29 @@ def mutation_guided_fuzz(method, original_sentence, max_iteration):
     print(f"System under test error false positives: {false_positives_error}")
 
 
-def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set, coverage):
+def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set, coverage, debug=False):
     with open(MUTATION_BRIDGE_FILE_PATH, 'w') as f:
         json.dump({"ORIGINAL_SENTENCE": original_sentence, "MUTATED_SENTENCE": input_str,
                    "EXPECTED_OUTPUT": expected_output}, f)
     try:
-        print("Coverage not increased. Starting mutation testing...")
+        if debug: print("Coverage not increased. Starting mutation testing...")
         candidate_mutations = filter_killable_mutants(coverage)
         if not candidate_mutations:
-            print("Nothing to test in current iteration, skipping mutation testing.\n")
+            if debug: print("Nothing to test in current iteration, skipping mutation testing.\n")
             kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
                 mutant_set)
             return kill_count, mutant_set, false_positives_timeout, false_positives_error
         handle_exec_inprocess_batch(COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION)
     except Exception as e:
-        print(f"Unexpected error: {e}")
-    print("Mutation testing ended.")
+        if debug: print(f"Unexpected error: {e}")
+    if debug: print("Mutation testing ended.")
     kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
         mutant_set)
-    print(f"{kill_count} killed mutants out of {len(mutant_set)}")
-    print(f"Mutation score: {kill_count / len(mutant_set) * 100:.2f}%")
-    print(f"Timeout false positives: {false_positives_timeout}")
-    print(f"System under test error false positives: {false_positives_error}\n")
+    if debug:
+        print(f"{kill_count} killed mutants out of {len(mutant_set)}")
+        print(f"Mutation score: {kill_count / len(mutant_set) * 100:.2f}%")
+        print(f"Timeout false positives: {false_positives_timeout}")
+        print(f"System under test error false positives: {false_positives_error}\n")
     return kill_count, mutant_set, false_positives_timeout, false_positives_error
 
 

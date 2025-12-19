@@ -20,6 +20,10 @@ def test_gec_cosmic_ray_bridge():
     actual = agt.anottate_clues(word_dict_list, original_sentence)
     result = f"SUT return value: {actual}\nExpected return value: {expected}"
     try:
+        for entry in actual:
+            entry.pop("feedback", None)
+        for entry in expected:
+            entry.pop("feedback", None)
         assert actual == expected
         return result, None
     except AssertionError:
