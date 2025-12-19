@@ -1,14 +1,15 @@
+import hashlib
 import json
 import os
+import pickle
 import random
 import subprocess
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from typing import Tuple, List, Any, Set, Union
+from typing import Tuple, List, Any, Union, Sequence
 
-from fuzzingbook.Coverage import Location
 from fuzzingbook.Fuzzer import Runner, PrintRunner
-from fuzzingbook.GreyboxFuzzer import PowerSchedule, Mutator, getPathID
+from fuzzingbook.GreyboxFuzzer import PowerSchedule, Mutator
 from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 
 Outcome = str
@@ -34,11 +35,16 @@ class TestResult:
         return TestResult(**data)
 
 
+def getPathID(coverage: Any) -> str:
+    pickled = pickle.dumps(sorted(coverage))
+    return hashlib.md5(pickled).hexdigest()
+
+
 class Seed:
     def __init__(self, data: str) -> None:
         self.data = data
 
-        self.coverage: Set[Location] = set()
+        self.coverage_hash: str = ''
         self.distance: Union[int, float] = -1
         self.energy = 0.0
 
@@ -54,6 +60,15 @@ class Seed:
 
     def __hash__(self):
         return hash(self.data)
+
+
+class AFLFastSchedule(PowerSchedule):
+    def __init__(self, exponent: float) -> None:
+        self.exponent = exponent
+
+    def assignEnergy(self, population: Sequence[Seed]) -> None:
+        for seed in population:
+            seed.energy = 1 / (self.path_frequency[seed.coverage_hash] ** self.exponent)
 
 
 class Fuzzer:
@@ -120,23 +135,16 @@ class AdvancedMutationFuzzer(Fuzzer):
 
 
 class UnguidedFuzzer(AdvancedMutationFuzzer):
-    def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule, max_population=100):
+    def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule):
         super().__init__(seeds, mutator, schedule)
-        self.max_population = max_population
 
     def reset(self):
         super().reset()
         self.population = []
 
     def add_to_population(self, seed: Seed, result: subprocess.CompletedProcess):
-        if len(self.population) < self.max_population:
-            self.population.append(seed)
-            self.expected_results[seed.data] = result
-        else:
-            i = random.randint(0, self.max_population - 1)
-            self.expected_results.pop(self.population[i].data)
-            self.population[i] = seed
-            self.expected_results[seed.data] = result
+        self.population.append(seed)
+        self.expected_results[seed.data] = result
 
     def run(self, runner: FunctionCoverageRunner) -> Tuple[subprocess.CompletedProcess, Outcome]:
         result, outcome = super().run(runner)
@@ -150,9 +158,8 @@ class UnguidedFuzzer(AdvancedMutationFuzzer):
 
 
 class GecGreyboxFuzzer(AdvancedMutationFuzzer):
-    def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule, max_population=100):
+    def __init__(self, seeds: List[str], mutator: Mutator, schedule: PowerSchedule):
         super().__init__(seeds, mutator, schedule)
-        self.max_population = max_population
 
     def reset(self):
         super().reset()
@@ -160,17 +167,8 @@ class GecGreyboxFuzzer(AdvancedMutationFuzzer):
         self.population = []
 
     def add_to_population(self, seed: Seed, result: subprocess.CompletedProcess):
-        if len(self.population) < self.max_population:
-            self.population.append(seed)
-            self.expected_results[seed.data] = result
-        else:
-            min_seed_energy = min(s.energy for s in self.population)
-            for i in range(len(self.population)):
-                if self.population[i].energy == min_seed_energy:
-                    self.expected_results.pop(self.population[i].data)
-                    self.population[i] = seed
-                    self.expected_results[seed.data] = result
-                    break
+        self.population.append(seed)
+        self.expected_results[seed.data] = result
 
     def run(self, runner: FunctionCoverageRunner) -> Tuple[subprocess.CompletedProcess, Outcome, bool]:
         result, outcome = super().run(runner)
@@ -180,7 +178,7 @@ class GecGreyboxFuzzer(AdvancedMutationFuzzer):
             coverage_increased = True
             self.coverages_seen.add(new_coverage)
             seed = Seed(self.inp)
-            seed.coverage = runner.coverage()
+            seed.coverage_hash = getPathID(runner.coverage())
             if seed not in self.population:
                 self.add_to_population(seed, result)
         return result, outcome, coverage_increased

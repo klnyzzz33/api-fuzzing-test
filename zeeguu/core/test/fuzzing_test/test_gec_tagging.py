@@ -8,10 +8,11 @@ from typing import List
 
 from cosmic_ray.cli import handle_exec_inprocess_batch
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.GreyboxFuzzer import AFLFastSchedule, PowerSchedule
+from fuzzingbook.GreyboxFuzzer import PowerSchedule
 from fuzzingbook.MutationFuzzer import FunctionCoverageRunner
 
-from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer, UnguidedFuzzer, Seed
+from zeeguu.core.test.fuzzing_test.gec_fuzzer import CountingGreyboxFuzzer, UnguidedFuzzer, Seed, AFLFastSchedule
+from zeeguu.core.test.fuzzing_test.gec_fuzzer import getPathID
 from zeeguu.core.test.fuzzing_test.gec_generate_seed import gec_generate_seed
 from zeeguu.core.test.fuzzing_test.gec_mutator import GecMutator
 from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import COSMIC_RAY_SESSION, COSMIC_RAY_CONFIG
@@ -152,7 +153,7 @@ def mutation_guided_fuzz(method, original_sentence, max_iteration):
             if kill_count > total_kill_count:
                 total_kill_count = kill_count
                 seed = Seed(fuzzer.inp)
-                seed.coverage = runner.coverage()
+                seed.coverage_hash = getPathID(runner.coverage())
                 if seed not in fuzzer.population:
                     fuzzer.add_to_population(seed, result)
             clear_skipped_and_survived_mutants()
