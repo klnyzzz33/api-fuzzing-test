@@ -132,6 +132,11 @@ class UnguidedFuzzer(AdvancedMutationFuzzer):
         if len(self.population) < self.max_population:
             self.population.append(seed)
             self.expected_results[seed.data] = result
+        else:
+            i = random.randint(0, self.max_population - 1)
+            self.expected_results.pop(self.population[i].data)
+            self.population[i] = seed
+            self.expected_results[seed.data] = result
 
     def run(self, runner: FunctionCoverageRunner) -> Tuple[subprocess.CompletedProcess, Outcome]:
         result, outcome = super().run(runner)

@@ -4,7 +4,6 @@ import json
 import os
 import pkgutil
 import sqlite3
-import time
 from typing import List
 
 from cosmic_ray.cli import handle_exec_inprocess_batch
@@ -98,21 +97,19 @@ def test_gec_tagging_labels(test_env):
         word_dictionary_list = [{"word": w, "isInSentence": True} for w in user_tokens]
         return agt.anottate_clues(word_dictionary_list, original_sentence)
 
-    max_seconds = 60
+    max_iteration = 10000
+    unguided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
+    coverage_guided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
+    mutation_guided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
 
-    unguided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
-    coverage_guided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
-    mutation_guided_fuzz(annotate_clues_wrapper, original_sentence, max_seconds)
 
-
-def unguided_fuzz(method, original_sentence, max_seconds):
+def unguided_fuzz(method, original_sentence, max_iteration):
     print("\nStarting unguided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
     fuzzer = UnguidedFuzzer(seeds, MUTATOR, PowerSchedule())
     i = 0
-    end_time = time.time() + max_seconds
-    while time.time() < end_time:
+    while i < max_iteration:
         result, _ = fuzzer.run(runner)
         print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         i += 1
@@ -121,14 +118,13 @@ def unguided_fuzz(method, original_sentence, max_seconds):
     print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
 
 
-def coverage_guided_fuzz(method, original_sentence, max_seconds):
+def coverage_guided_fuzz(method, original_sentence, max_iteration):
     print("\nStarting coverage-guided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, AFLFastSchedule(5))
     i = 0
-    end_time = time.time() + max_seconds
-    while time.time() < end_time:
+    while i < max_iteration:
         result, _, coverage_increased = fuzzer.run(runner)
         print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         i += 1
@@ -137,7 +133,7 @@ def coverage_guided_fuzz(method, original_sentence, max_seconds):
     print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
 
 
-def mutation_guided_fuzz(method, original_sentence, max_seconds):
+def mutation_guided_fuzz(method, original_sentence, max_iteration):
     print("\nStarting mutation testing-guided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
@@ -147,8 +143,7 @@ def mutation_guided_fuzz(method, original_sentence, max_seconds):
     false_positives_timeout = 0
     false_positives_error = 0
     i = 0
-    end_time = time.time() + max_seconds
-    while time.time() < end_time:
+    while i < max_iteration:
         result, _, coverage_increased = fuzzer.run(runner)
         print(f"Fuzzing iteration #{i + 1} input: {fuzzer.inp}")
         if not coverage_increased:
@@ -217,8 +212,10 @@ def get_killable_mutation_specs_from_db():
     cursor = conn.cursor()
     cursor.execute("""
                    SELECT module_path, start_pos_row, ms.job_id
-                   FROM mutation_specs ms LEFT JOIN work_results wr ON ms.job_id = wr.job_id
-                   WHERE wr.job_id IS NULL OR wr.test_outcome != 'KILLED'
+                   FROM mutation_specs ms
+                            LEFT JOIN work_results wr ON ms.job_id = wr.job_id
+                   WHERE wr.job_id IS NULL
+                      OR wr.test_outcome != 'KILLED'
                    """)
     result = list(cursor.fetchall())
     conn.close()
