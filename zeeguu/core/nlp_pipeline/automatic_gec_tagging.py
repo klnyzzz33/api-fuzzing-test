@@ -420,8 +420,8 @@ class AutoGECTagging():
                 zeeguu_operations += [(operation, span)]
                 max_merge_attempts = 10
                 merge_attempts = 0
-                while (current_err_w.strip() != word_dictionary_list[len(zeeguu_err_w)]["word"]):
-                    if i_pos != len(err_w)-1 and merge_attempts < max_merge_attempts:
+                while (current_err_w.strip() != word_dictionary_list[len(zeeguu_err_w)]["word"]) and merge_attempts < max_merge_attempts:
+                    if i_pos != len(err_w)-1:
                         current_err_w += err_w[i_pos+1]
                         zeeguu_correction += annotated_errors["corrections"][i_pos+1]
                         i_pos += 1
