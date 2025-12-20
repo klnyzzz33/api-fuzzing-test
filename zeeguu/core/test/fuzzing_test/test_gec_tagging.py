@@ -21,9 +21,29 @@ from zeeguu.core.test.fuzzing_test.test_gec_tagging_setup import test_env, MUTAT
 
 GEC_INPUT_GRAMMAR: Grammar = {
     "<start>": ["<sentence>"],
-    "<sentence>": ["<sent_parts> <sent_parts> <sent_parts>"],
-    "<sent_parts>": ["<token>", "<token> <sent_parts>"],
-    "<token>": ["<noun>", "<verb>", "<prep>", "<adj>", "<adv>", "<pron>", "<punct>"],
+    "<sentence>": [
+        "<subject> <verb_phrase> .",
+        "<subject> <verb_phrase> <object> .",
+        "<subject> <verb_phrase> <prep_phrase> .",
+        "<subject> <verb_phrase> <object> <prep_phrase> ."
+    ],
+    "<subject>": [
+        "<article> <noun>",
+        "<article> <adj> <noun>",
+        "<pron>"
+    ],
+    "<verb_phrase>": [
+        "<verb>",
+        "<verb> <adv>"
+    ],
+    "<object>": [
+        "<article> <noun>",
+        "<article> <adj> <noun>",
+    ],
+    "<prep_phrase>": [
+        "<prep> <article> <noun>",
+        "<prep> <article> <adj> <noun>"
+    ],
     "<noun>": ["cat", "cats", "book", "books", "airplane", "plane"],
     "<verb>": ["am", "are", "is", "was", "were", "go", "goes", "went", "run", "runs", "running", "eat", "eats",
                "eating"],
@@ -31,6 +51,7 @@ GEC_INPUT_GRAMMAR: Grammar = {
     "<adj>": ["big", "small", "tiny", "large", "larger"],
     "<adv>": ["quickly", "slowly", "silently"],
     "<pron>": ["he", "she", "they", "them", "me", "I", "who", "whom"],
+    "<article>": ["the", "a", "an"],
     "<punct>": [".", ",", ";", ":", "!"]
 }
 
@@ -47,9 +68,13 @@ GEC_REPLACE: dict[str, List[str]] = {
     "cats": ["cat"],
     "book": ["books"],
     "books": ["book"],
-    "am": ["are", "is"],
-    "are": ["am", "is"],
-    "is": ["am", "are"],
+    "airplane": ["plane"],
+    "plane": ["airplane"],
+    "am": ["are", "is", "was", "were"],
+    "are": ["am", "is", "was", "were"],
+    "is": ["am", "are", "was", "were"],
+    "was": ["am", "are", "is", "were"],
+    "were": ["am", "are", "is", "was"],
     "go": ["goes", "went", "going"],
     "goes": ["go", "went", "going"],
     "went": ["go", "goes", "going"],
@@ -60,12 +85,14 @@ GEC_REPLACE: dict[str, List[str]] = {
     "run": ["runs", "ran", "running"],
     "runs": ["run", "ran", "running"],
     "ran": ["run", "runs", "running"],
-    "running": ["run", "runs", "running"],
+    "running": ["run", "runs", "ran"],
     "I": ["me"],
     "me": ["I"],
-    "he": ["she", "it"],
-    "she": ["he", "it"],
-    "it": ["he", "she"],
+    "he": ["she", "it", "him", "her"],
+    "she": ["he", "it", "him", "her"],
+    "it": ["he", "she", "him", "her"],
+    "him": ["he", "she", "it", "her"],
+    "her": ["he", "she", "it", "him"],
     "they": ["them"],
     "them": ["they"],
     "who": ["whom"],
@@ -73,6 +100,9 @@ GEC_REPLACE: dict[str, List[str]] = {
     "in": ["on", "at"],
     "on": ["in", "at"],
     "at": ["in", "on"],
+    "the": ["a", "an"],
+    "a": ["the", "an"],
+    "an": ["the", "a"],
     "big": ["bigger", "biggest"],
     "bigger": ["big", "biggest"],
     "biggest": ["bigger", "big"],
@@ -81,7 +111,9 @@ GEC_REPLACE: dict[str, List[str]] = {
     "largest": ["large", "larger"],
     "small": ["smaller", "smallest"],
     "smaller": ["small", "smallest"],
-    "smallest": ["smaller", "small"]
+    "smallest": ["small", "smaller"],
+    "quickly": ["slowly"],
+    "slowly": ["quickly"]
 }
 
 MUTATOR = GecMutator(TERMINALS, GEC_REPLACE)
@@ -98,7 +130,7 @@ def test_gec_tagging_labels(test_env):
         word_dictionary_list = [{"word": w, "isInSentence": True} for w in user_tokens]
         return agt.anottate_clues(word_dictionary_list, original_sentence)
 
-    max_iteration = 10000
+    max_iteration = 1000
     unguided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
     coverage_guided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
     mutation_guided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
@@ -174,8 +206,8 @@ def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set
                    "EXPECTED_OUTPUT": expected_output}, f)
     try:
         if debug: print("Coverage not increased. Starting mutation testing...")
-        candidate_mutations = filter_killable_mutants(coverage)
-        if not candidate_mutations:
+        has_killable_mutants = filter_killable_mutants(coverage)
+        if not has_killable_mutants:
             if debug: print("Nothing to test in current iteration, skipping mutation testing.\n")
             kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
                 mutant_set)
@@ -204,9 +236,10 @@ def filter_killable_mutants(coverage):
             skip_job_ids.append(job_id)
         else:
             candidate_job_ids.append(job_id)
-    if skip_job_ids:
-        insert_skipped_work_results(skip_job_ids)
-    return candidate_job_ids
+    if not candidate_job_ids:
+        return False
+    insert_skipped_work_results(skip_job_ids)
+    return True
 
 
 def get_killable_mutation_specs_from_db():

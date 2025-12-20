@@ -103,7 +103,7 @@ def get_mutant_count():
 def clear_survived_mutants():
     conn = sqlite3.connect(COSMIC_RAY_SESSION)
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM work_results WHERE test_outcome != 'KILLED'")
+    cursor.execute("DELETE FROM work_results WHERE test_outcome = 'SURVIVED'")
     conn.commit()
     conn.close()
 
