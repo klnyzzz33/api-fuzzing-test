@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_134618-mutation-guided.json",
+  "original_sentence": "the large airplane went on an small books .",
+  "corpus_size": 610,
+  "coverage_size": 477,
+  "mutants_killed": {
+    "small' lage airplanne went3 airplane Din the books whom .": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2679
+    },
+    "small plane books who went in the large .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2665
+    },
+    "the large airplane went on plane an small books .": {
+      "kill_count": 518,
+      "sut_error_kill_count": 366
+    },
+    "the large airplane goes on book small . books": {
+      "kill_count": 914,
+      "sut_error_kill_count": 658
+    },
+    "largest the airplanewent on book small .z books": {
+      "kill_count": 787,
+      "sut_error_kill_count": 557
+    },
+    "went lr:ge Fairplane the books sal in .rT": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2666
+    },
+    "the large airpane went on with an small plane books .": {
+      "kill_count": 510,
+      "sut_error_kill_count": 397
+    },
+    "large an went airplane a at small books .": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2673
+    },
+    "a large . went in small books before airplane": {
+      "kill_count": 806,
+      "sut_error_kill_count": 601
+    },
+    "twhe large airplane o small books .": {
+      "kill_count": 2684,
+      "sut_error_kill_count": 531
+    }
+  },
+  "mutant_count": 2688
+}

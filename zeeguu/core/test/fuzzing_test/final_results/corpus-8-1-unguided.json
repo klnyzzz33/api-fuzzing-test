@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_134227-unguided.json",
+  "original_sentence": "them go the tiny book .",
+  "corpus_size": 980,
+  "coverage_size": 711,
+  "mutants_killed": {
+    "them go the large tiny book the \".:": {
+      "kill_count": 579,
+      "sut_error_kill_count": 458
+    },
+    "the<m before before the Mtny go book.k": {
+      "kill_count": 837,
+      "sut_error_kill_count": 613
+    },
+    "them a go books tiny at efore. with": {
+      "kill_count": 653,
+      "sut_error_kill_count": 468
+    },
+    "airplane the the plane go tiny book . ,": {
+      "kill_count": 735,
+      "sut_error_kill_count": 442
+    },
+    "them gotXhe tin bo^ok .:": {
+      "kill_count": 735,
+      "sut_error_kill_count": 468
+    },
+    ". small they going tiny books he": {
+      "kill_count": 776,
+      "sut_error_kill_count": 546
+    },
+    "thceL go he a ti'ny books .:": {
+      "kill_count": 759,
+      "sut_error_kill_count": 542
+    },
+    "them , go the tin book with \".:": {
+      "kill_count": 557,
+      "sut_error_kill_count": 437
+    },
+    "they go the tiny before Mtny book": {
+      "kill_count": 695,
+      "sut_error_kill_count": 513
+    },
+    "thceL go he tiny books bok .:": {
+      "kill_count": 713,
+      "sut_error_kill_count": 481
+    }
+  },
+  "mutant_count": 2688
+}

@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_133605-mutation-guided.json",
+  "original_sentence": "a book is slowly without the books .",
+  "corpus_size": 711,
+  "coverage_size": 596,
+  "mutants_killed": {
+    "an . is slowl)y withoutthe books book": {
+      "kill_count": 2683,
+      "sut_error_kill_count": 441
+    },
+    "thek the books books am slopwly withot the Oan .": {
+      "kill_count": 2680,
+      "sut_error_kill_count": 592
+    },
+    "an book is slowly wiKhout the books": {
+      "kill_count": 717,
+      "sut_error_kill_count": 465
+    },
+    "a book amre . them in without airplane an ebooks slowly": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2686
+    },
+    "books the slowly without is book .": {
+      "kill_count": 2680,
+      "sut_error_kill_count": 462
+    },
+    "thek the books book is go slopwly without the Oan .": {
+      "kill_count": 751,
+      "sut_error_kill_count": 528
+    },
+    "a . is sl=owly without the books bookv": {
+      "kill_count": 2683,
+      "sut_error_kill_count": 507
+    },
+    "a is books is slowly wtqhout . book on the": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2676
+    },
+    "thek the books with books i slop(wly withot the Oan .": {
+      "kill_count": 760,
+      "sut_error_kill_count": 555
+    },
+    "an books bookweure sloly . the books wihout": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2682
+    }
+  },
+  "mutant_count": 2688
+}

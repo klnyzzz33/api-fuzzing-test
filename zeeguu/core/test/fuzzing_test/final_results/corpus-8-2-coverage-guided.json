@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_134232-coverage-guided.json",
+  "original_sentence": "them go the tiny book .",
+  "corpus_size": 748,
+  "coverage_size": 750,
+  "mutants_killed": {
+    "they runs go the tiny book": {
+      "kill_count": 737,
+      "sut_error_kill_count": 580
+    },
+    "hem tny: the] going . who book": {
+      "kill_count": 968,
+      "sut_error_kill_count": 605
+    },
+    "thKhm go a an tiny bok .": {
+      "kill_count": 743,
+      "sut_error_kill_count": 560
+    },
+    "silently they th$e tny: go boo]Dk .": {
+      "kill_count": 915,
+      "sut_error_kill_count": 613
+    },
+    "go the tiny bo%oWk .": {
+      "kill_count": 691,
+      "sut_error_kill_count": 520
+    },
+    "they go t9h . book tin_y": {
+      "kill_count": 915,
+      "sut_error_kill_count": 570
+    },
+    "thmK go a an tny book .": {
+      "kill_count": 576,
+      "sut_error_kill_count": 385
+    },
+    "they gouF thetiny .i": {
+      "kill_count": 845,
+      "sut_error_kill_count": 549
+    },
+    "am they g6o the bo%oWkC . tiny": {
+      "kill_count": 717,
+      "sut_error_kill_count": 468
+    },
+    "a go thm san . book tiny": {
+      "kill_count": 1008,
+      "sut_error_kill_count": 580
+    }
+  },
+  "mutant_count": 2688
+}

@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_134502-unguided.json",
+  "original_sentence": "the large airplane went on an small books .",
+  "corpus_size": 988,
+  "coverage_size": 589,
+  "mutants_killed": {
+    "teS onan airplane . largest sall books going": {
+      "kill_count": 901,
+      "sut_error_kill_count": 593
+    },
+    "an go ! la@rge airplane going on the small book .": {
+      "kill_count": 891,
+      "sut_error_kill_count": 599
+    },
+    "on large airplan[e wtent the smal an books .": {
+      "kill_count": 939,
+      "sut_error_kill_count": 617
+    },
+    "te large af<ter airplane went on an small books .": {
+      "kill_count": 678,
+      "sut_error_kill_count": 515
+    },
+    "the go large airplane went on the small books .": {
+      "kill_count": 781,
+      "sut_error_kill_count": 573
+    },
+    "teS large airpGlan . on an sallbooks went": {
+      "kill_count": 883,
+      "sut_error_kill_count": 601
+    },
+    "went large airplane eats an on . the small books .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2680
+    },
+    "te large after aCirplae went on an small books .": {
+      "kill_count": 780,
+      "sut_error_kill_count": 538
+    },
+    "the larg airplane on small an books.": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2672
+    },
+    "an go large airplane went on was the small book .": {
+      "kill_count": 745,
+      "sut_error_kill_count": 523
+    }
+  },
+  "mutant_count": 2688
+}

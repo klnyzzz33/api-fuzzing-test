@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_133500-unguided.json",
+  "original_sentence": "a book is slowly without the books .",
+  "corpus_size": 983,
+  "coverage_size": 744,
+  "mutants_killed": {
+    "a book eat . slowly am an books without": {
+      "kill_count": 798,
+      "sut_error_kill_count": 544
+    },
+    "a bookis sowlym wihout books the .": {
+      "kill_count": 2634,
+      "sut_error_kill_count": 581
+    },
+    "booQk is swly wihout . airplane books": {
+      "kill_count": 908,
+      "sut_error_kill_count": 548
+    },
+    "a book eat . slowly without the books is": {
+      "kill_count": 638,
+      "sut_error_kill_count": 511
+    },
+    "book books small silentlywihout . sowOly is": {
+      "kill_count": 614,
+      "sut_error_kill_count": 391
+    },
+    "an book is , slowly wihout . books the": {
+      "kill_count": 2598,
+      "sut_error_kill_count": 537
+    },
+    "ad book whom was slowly wihout the book": {
+      "kill_count": 737,
+      "sut_error_kill_count": 481
+    },
+    "a ; slowly without book the books is": {
+      "kill_count": 778,
+      "sut_error_kill_count": 551
+    },
+    "a book is slow2ly large me wihout the Fbook": {
+      "kill_count": 727,
+      "sut_error_kill_count": 562
+    },
+    "am book them without slowly . thebooks the": {
+      "kill_count": 2552,
+      "sut_error_kill_count": 680
+    }
+  },
+  "mutant_count": 2688
+}

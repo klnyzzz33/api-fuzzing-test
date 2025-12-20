@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_133406-mutation-guided.json",
+  "original_sentence": "an small plane runs in a large cat .",
+  "corpus_size": 655,
+  "coverage_size": 549,
+  "mutants_killed": {
+    "an sall plane runs on large them cat .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2674
+    },
+    "an small plane runs i the larger cat .ge": {
+      "kill_count": 677,
+      "sut_error_kill_count": 560
+    },
+    "a'n sZmall go in runs a cat.e": {
+      "kill_count": 2680,
+      "sut_error_kill_count": 577
+    },
+    "an small in runs 2uickly plane a lar&ge cat .": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2674
+    },
+    "the quickly in small runs plane a large cat .": {
+      "kill_count": 833,
+      "sut_error_kill_count": 536
+    },
+    "an small plane .e runs before in the large cats am": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2684
+    },
+    "an small plane rran on large after cat": {
+      "kill_count": 677,
+      "sut_error_kill_count": 489
+    },
+    "an small rran plane large on after cat": {
+      "kill_count": 2687,
+      "sut_error_kill_count": 2678
+    },
+    "the small in quickly runs plane a . cat large": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2671
+    },
+    "an small pSlane in runs a Acats .eO": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2675
+    }
+  },
+  "mutant_count": 2688
+}

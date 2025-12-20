@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_134645-unguided.json",
+  "original_sentence": "the tiny airplane runs slowly a books .",
+  "corpus_size": 978,
+  "coverage_size": 679,
+  "mutants_killed": {
+    ". tiny aGirplane tAhe slowly after a small small booksq runs": {
+      "kill_count": 862,
+      "sut_error_kill_count": 585
+    },
+    "tAhe quickly a . slowly tiny airplanebook, runs": {
+      "kill_count": 1084,
+      "sut_error_kill_count": 702
+    },
+    "tAhe tiny plane runs slowly a cats books :": {
+      "kill_count": 658,
+      "sut_error_kill_count": 456
+    },
+    "tAhe tiny airplane slowly a": {
+      "kill_count": 803,
+      "sut_error_kill_count": 605
+    },
+    "tAhe tiny an . slowly airplane bgoks running": {
+      "kill_count": 686,
+      "sut_error_kill_count": 434
+    },
+    "tAhe tiny airplane running slowly a books are go book .": {
+      "kill_count": 791,
+      "sut_error_kill_count": 512
+    },
+    "the tiny airplane runs slowly booksG before a .": {
+      "kill_count": 689,
+      "sut_error_kill_count": 496
+    },
+    "tAhe tiny a . quickly ploane books runs": {
+      "kill_count": 939,
+      "sut_error_kill_count": 565
+    },
+    "the tiny airplane9 they run slowly boosG before a .": {
+      "kill_count": 815,
+      "sut_error_kill_count": 540
+    },
+    "a *tiny plane ran slowly a books .": {
+      "kill_count": 928,
+      "sut_error_kill_count": 663
+    }
+  },
+  "mutant_count": 2688
+}

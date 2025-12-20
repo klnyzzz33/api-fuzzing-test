@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_133506-coverage-guided.json",
+  "original_sentence": "a book is slowly without the books .",
+  "corpus_size": 749,
+  "coverage_size": 751,
+  "mutants_killed": {
+    "the ]withut )is slowlyan . books": {
+      "kill_count": 2622,
+      "sut_error_kill_count": 610
+    },
+    "a book )is slowly ]withut an books .": {
+      "kill_count": 729,
+      "sut_error_kill_count": 475
+    },
+    "a book is slowl]y an books .": {
+      "kill_count": 631,
+      "sut_error_kill_count": 440
+    },
+    "without is slowly the . ooks a": {
+      "kill_count": 685,
+      "sut_error_kill_count": 419
+    },
+    "a book is . slowly plane the books without": {
+      "kill_count": 684,
+      "sut_error_kill_count": 558
+    },
+    "a bookX is quickly ^go ]without boobks an after .": {
+      "kill_count": 915,
+      "sut_error_kill_count": 624
+    },
+    "a is . without the books book": {
+      "kill_count": 710,
+      "sut_error_kill_count": 522
+    },
+    "a book are slowl]y withocut an books .": {
+      "kill_count": 575,
+      "sut_error_kill_count": 381
+    },
+    "a . at was slowlywithout the book book": {
+      "kill_count": 767,
+      "sut_error_kill_count": 558
+    },
+    "a book)is slowly ]without an booEks .": {
+      "kill_count": 814,
+      "sut_error_kill_count": 546
+    }
+  },
+  "mutant_count": 2688
+}

@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_134747-mutation-guided.json",
+  "original_sentence": "the tiny airplane runs slowly a books .",
+  "corpus_size": 747,
+  "coverage_size": 627,
+  "mutants_killed": {
+    "the tiny airpl^ane runs slowljy a .": {
+      "kill_count": 608,
+      "sut_error_kill_count": 450
+    },
+    "the airplane tiny slowly the with bois me .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 636
+    },
+    "he the tiny plane rRuns slowly a boioks .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2681
+    },
+    "the tiny airplane running slowly a boioks .": {
+      "kill_count": 614,
+      "sut_error_kill_count": 436
+    },
+    "<the tin airplane them runsslowljy the .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2672
+    },
+    "he tiny airplane& runs slowly a are books .": {
+      "kill_count": 825,
+      "sut_error_kill_count": 651
+    },
+    "the tiny airplane books slowly a runs .": {
+      "kill_count": 683,
+      "sut_error_kill_count": 580
+    },
+    "tiny airplane books slowly a runs .": {
+      "kill_count": 804,
+      "sut_error_kill_count": 628
+    },
+    ", Gairplane slowly a books runs tiny .": {
+      "kill_count": 839,
+      "sut_error_kill_count": 615
+    },
+    "the airplhane rPuns slowljy a boioks .": {
+      "kill_count": 780,
+      "sut_error_kill_count": 524
+    }
+  },
+  "mutant_count": 2688
+}

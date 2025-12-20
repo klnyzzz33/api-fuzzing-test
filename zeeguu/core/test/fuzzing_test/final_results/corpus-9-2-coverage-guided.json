@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_134508-coverage-guided.json",
+  "original_sentence": "the large airplane went on an small books .",
+  "corpus_size": 672,
+  "coverage_size": 672,
+  "mutants_killed": {
+    "the lage airplane went on aMn small books .": {
+      "kill_count": 605,
+      "sut_error_kill_count": 481
+    },
+    "Gthe large went6j on an books sallest .": {
+      "kill_count": 882,
+      "sut_error_kill_count": 604
+    },
+    "Gthe laTrge on went6j an sallest books .": {
+      "kill_count": 800,
+      "sut_error_kill_count": 501
+    },
+    "the large airplane wentj ansmall books .": {
+      "kill_count": 763,
+      "sut_error_kill_count": 512
+    },
+    "thPe large boos airplane wentj on an he s[mall .": {
+      "kill_count": 945,
+      "sut_error_kill_count": 654
+    },
+    "large the kairplane on went6j an small books .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2665
+    },
+    "the large airplane on . an small books wenLt6j": {
+      "kill_count": 779,
+      "sut_error_kill_count": 521
+    },
+    "the large airplane on went6j an sallest books .": {
+      "kill_count": 692,
+      "sut_error_kill_count": 493
+    },
+    "the large plane went6j on an salest books .": {
+      "kill_count": 768,
+      "sut_error_kill_count": 535
+    },
+    "the largest goes on airplane aMSnr smallbooks .": {
+      "kill_count": 802,
+      "sut_error_kill_count": 526
+    }
+  },
+  "mutant_count": 2688
+}

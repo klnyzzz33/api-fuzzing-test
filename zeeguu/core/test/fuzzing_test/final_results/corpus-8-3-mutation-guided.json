@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_134440-mutation-guided.json",
+  "original_sentence": "them go the tiny book .",
+  "corpus_size": 926,
+  "coverage_size": 728,
+  "mutants_killed": {
+    "book tiy tChem go : it": {
+      "kill_count": 885,
+      "sut_error_kill_count": 568
+    },
+    "who before . t\\e tinythey book8 go": {
+      "kill_count": 739,
+      "sut_error_kill_count": 537
+    },
+    "boowk go tiny the shethey": {
+      "kill_count": 887,
+      "sut_error_kill_count": 606
+    },
+    "they go tiy book . after": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2670
+    },
+    "book go th\\e with tiny . tChem": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2673
+    },
+    "them in go an tiy book .": {
+      "kill_count": 672,
+      "sut_error_kill_count": 514
+    },
+    "them g the tiy book o.": {
+      "kill_count": 528,
+      "sut_error_kill_count": 404
+    },
+    "book the goes tiny .": {
+      "kill_count": 700,
+      "sut_error_kill_count": 408
+    },
+    "book . th\\e tiny they whom go": {
+      "kill_count": 897,
+      "sut_error_kill_count": 610
+    },
+    "them go in a tiny book .": {
+      "kill_count": 529,
+      "sut_error_kill_count": 377
+    }
+  },
+  "mutant_count": 2688
+}

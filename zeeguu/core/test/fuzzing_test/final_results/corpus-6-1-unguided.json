@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_133311-unguided.json",
+  "original_sentence": "an small plane runs in a large cat .",
+  "corpus_size": 985,
+  "coverage_size": 695,
+  "mutants_killed": {
+    "the small lane uns it in large cat . book": {
+      "kill_count": 715,
+      "sut_error_kill_count": 492
+    },
+    "the sallesPt plane us in large cat .": {
+      "kill_count": 676,
+      "sut_error_kill_count": 475
+    },
+    "the smallest plane us in eat cat large .;": {
+      "kill_count": 860,
+      "sut_error_kill_count": 570
+    },
+    "an llarger small runs at a large cat . go": {
+      "kill_count": 718,
+      "sut_error_kill_count": 508
+    },
+    "the9 small uns in l7arge cats .": {
+      "kill_count": 690,
+      "sut_error_kill_count": 452
+    },
+    "small lane uns the large silently ct . bookm": {
+      "kill_count": 806,
+      "sut_error_kill_count": 608
+    },
+    "the small plane running i}n large cat .": {
+      "kill_count": 734,
+      "sut_error_kill_count": 518
+    },
+    "an smal plane at runssmall large cat were .": {
+      "kill_count": 713,
+      "sut_error_kill_count": 518
+    },
+    "`an runs plane small is in before a large cat .": {
+      "kill_count": 890,
+      "sut_error_kill_count": 619
+    },
+    "the lane small who in large cat . uns": {
+      "kill_count": 814,
+      "sut_error_kill_count": 520
+    }
+  },
+  "mutant_count": 2688
+}
