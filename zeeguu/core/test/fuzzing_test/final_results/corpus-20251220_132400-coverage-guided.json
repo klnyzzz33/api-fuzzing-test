@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_132400-coverage-guided.json",
+  "original_sentence": "I goes quickly without the tiny plane .",
+  "corpus_size": 574,
+  "coverage_size": 575,
+  "mutants_killed": {
+    "me goes quickly without an tdny plane": {
+      "kill_count": 758,
+      "sut_error_kill_count": 536
+    },
+    "me wiQthout larger eating plane goes thetiny qu(ickly .T cat": {
+      "kill_count": 743,
+      "sut_error_kill_count": 432
+    },
+    "I goes larger eating quickly without th tiny plane .T": {
+      "kill_count": 569,
+      "sut_error_kill_count": 454
+    },
+    "I before goesquickly without the airplane tiny": {
+      "kill_count": 771,
+      "sut_error_kill_count": 526
+    },
+    "I go^es l]arger fquicky with]ut the tiny airplane .": {
+      "kill_count": 666,
+      "sut_error_kill_count": 473
+    },
+    "me $go eat . witWhout the tiny planje q]uickly": {
+      "kill_count": 726,
+      "sut_error_kill_count": 533
+    },
+    "me goes larger quickym plane an t[i5ny witDhout eating .": {
+      "kill_count": 803,
+      "sut_error_kill_count": 549
+    },
+    "I tiny quickly withou`t the goOe airplane .T": {
+      "kill_count": 549,
+      "sut_error_kill_count": 392
+    },
+    "without go eat . I the tiny eats planei qui0ckly/": {
+      "kill_count": 728,
+      "sut_error_kill_count": 501
+    },
+    "I are goesquickly eating without the tiny plane .": {
+      "kill_count": 764,
+      "sut_error_kill_count": 548
+    }
+  },
+  "mutant_count": 2688
+}

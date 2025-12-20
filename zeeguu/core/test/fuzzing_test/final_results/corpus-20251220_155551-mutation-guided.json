@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_155551-mutation-guided.json",
+  "original_sentence": "the airplane are the small plane .",
+  "corpus_size": 773,
+  "coverage_size": 624,
+  "mutants_killed": {
+    "t2he airplane a I arfGe . eat small an": {
+      "kill_count": 1049,
+      "sut_error_kill_count": 732
+    },
+    "a airplane . the mal are": {
+      "kill_count": 983,
+      "sut_error_kill_count": 649
+    },
+    "airrplane are . plane the": {
+      "kill_count": 2684,
+      "sut_error_kill_count": 2664
+    },
+    "whom a are smallairplane went th .": {
+      "kill_count": 913,
+      "sut_error_kill_count": 638
+    },
+    "th small airplane are the whmI .": {
+      "kill_count": 2653,
+      "sut_error_kill_count": 659
+    },
+    "smalTl aHirplane ae the th me .": {
+      "kill_count": 2669,
+      "sut_error_kill_count": 523
+    },
+    "s8mall are$the airpljuane a .": {
+      "kill_count": 903,
+      "sut_error_kill_count": 637
+    },
+    "the are plane the airplane .": {
+      "kill_count": 873,
+      "sut_error_kill_count": 644
+    },
+    "airplne the was tesmal .": {
+      "kill_count": 2683,
+      "sut_error_kill_count": 612
+    },
+    "the they airplanye eat . are the small a": {
+      "kill_count": 850,
+      "sut_error_kill_count": 583
+    }
+  },
+  "mutant_count": 2688
+}

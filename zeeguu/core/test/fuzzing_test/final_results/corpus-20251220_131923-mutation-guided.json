@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_131923-mutation-guided.json",
+  "original_sentence": "the cat are before an books .",
+  "corpus_size": 552,
+  "coverage_size": 440,
+  "mutants_killed": {
+    ". cat\\ am eat an before books the me": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2680
+    },
+    "on the c&at is before eat an ran am books . me": {
+      "kill_count": 672,
+      "sut_error_kill_count": 517
+    },
+    "books cat am before an ate the . me\"": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 657
+    },
+    "the before eat a am books . me": {
+      "kill_count": 821,
+      "sut_error_kill_count": 560
+    },
+    "the me cat !are . an books before me": {
+      "kill_count": 835,
+      "sut_error_kill_count": 559
+    },
+    "the am eat an before eats books . me": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2658
+    },
+    "cat the were before an books  me": {
+      "kill_count": 2648,
+      "sut_error_kill_count": 599
+    },
+    "the ca4t are before the books . me": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2685
+    },
+    "was the cat am before an eat books a . me": {
+      "kill_count": 603,
+      "sut_error_kill_count": 476
+    },
+    "ca4t books me before an the . ar0e": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2680
+    }
+  },
+  "mutant_count": 2688
+}

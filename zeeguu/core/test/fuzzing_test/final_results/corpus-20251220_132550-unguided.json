@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_132550-unguided.json",
+  "original_sentence": "an large cat running silently a books .",
+  "corpus_size": 989,
+  "coverage_size": 653,
+  "mutants_killed": {
+    "an large cat running books went soilently are a large .": {
+      "kill_count": 2659,
+      "sut_error_kill_count": 535
+    },
+    "an large large running- who cat silently a . bookws": {
+      "kill_count": 637,
+      "sut_error_kill_count": 446
+    },
+    "an with large with cat running large silently a books .": {
+      "kill_count": 534,
+      "sut_error_kill_count": 403
+    },
+    "an large large running cat sile1ntly a without . bookws": {
+      "kill_count": 2611,
+      "sut_error_kill_count": 477
+    },
+    "an large large runnig- who cat silently a . bookws": {
+      "kill_count": 587,
+      "sut_error_kill_count": 400
+    },
+    "an cat r6unning large silently a books.": {
+      "kill_count": 692,
+      "sut_error_kill_count": 494
+    },
+    "an large cat goes runs large wentsilently a books .": {
+      "kill_count": 2667,
+      "sut_error_kill_count": 535
+    },
+    "lager an large goes large runningcat silently a , . books": {
+      "kill_count": 2604,
+      "sut_error_kill_count": 494
+    },
+    "an bookws running cat silently a without . large": {
+      "kill_count": 2594,
+      "sut_error_kill_count": 582
+    },
+    "and large cat running large went silently after are a . book": {
+      "kill_count": 673,
+      "sut_error_kill_count": 492
+    }
+  },
+  "mutant_count": 2688
+}

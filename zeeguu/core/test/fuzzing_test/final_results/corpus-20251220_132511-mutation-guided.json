@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_132511-mutation-guided.json",
+  "original_sentence": "I goes quickly without the tiny plane .",
+  "corpus_size": 615,
+  "coverage_size": 487,
+  "mutants_killed": {
+    "goes I quickly without the tiny pYlne .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 461
+    },
+    "I goes me slowly withut te tinCy plane .": {
+      "kill_count": 654,
+      "sut_error_kill_count": 424
+    },
+    "I wentquickly witut the Qtiny plane big .": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2677
+    },
+    "going I quickly without ; the biggest tiny pYlne .": {
+      "kill_count": 624,
+      "sut_error_kill_count": 403
+    },
+    ": I go slowly withut te plane tinCy.": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2670
+    },
+    "me goes slowly theP without qui\"ckly tiny plane .": {
+      "kill_count": 697,
+      "sut_error_kill_count": 527
+    },
+    "goe I without the pYlanTe2@ .": {
+      "kill_count": 2684,
+      "sut_error_kill_count": 2666
+    },
+    "me goes qu-ickly the plane tiny :without .": {
+      "kill_count": 2687,
+      "sut_error_kill_count": 2663
+    },
+    "I go run slowly witjhout the tiny plane .": {
+      "kill_count": 2684,
+      "sut_error_kill_count": 2680
+    },
+    "I goes quickly running withuIt the tiny plane .": {
+      "kill_count": 565,
+      "sut_error_kill_count": 414
+    }
+  },
+  "mutant_count": 2688
+}

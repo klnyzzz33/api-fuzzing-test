@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_132051-mutation-guided.json",
+  "original_sentence": "the tiny cats eat quickly a cats .",
+  "corpus_size": 629,
+  "coverage_size": 523,
+  "mutants_killed": {
+    "tjhe tiny a . qTuikly at cats cats eat": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2662
+    },
+    "a3 tiny the eat . cats slowly cats< whom": {
+      "kill_count": 2612,
+      "sut_error_kill_count": 548
+    },
+    "the . eat quickly an cnats cats": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2679
+    },
+    "the cats eat cats a qujickly .R": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 565
+    },
+    "the me tinycas ate quickly a catsN .": {
+      "kill_count": 666,
+      "sut_error_kill_count": 464
+    },
+    "th ti>ny cas before ate quickly cats": {
+      "kill_count": 2669,
+      "sut_error_kill_count": 731
+    },
+    "the cts sheet slowly aa cats .": {
+      "kill_count": 800,
+      "sut_error_kill_count": 560
+    },
+    "tiny the cats et quickly a 1cats .": {
+      "kill_count": 684,
+      "sut_error_kill_count": 493
+    },
+    "tiny the cats et slowly a 1cats .": {
+      "kill_count": 690,
+      "sut_error_kill_count": 493
+    },
+    "the ate after cas ti>ny cats . quickly an": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 641
+    }
+  },
+  "mutant_count": 2688
+}

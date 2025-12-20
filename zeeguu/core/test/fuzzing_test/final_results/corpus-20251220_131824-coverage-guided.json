@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_131824-coverage-guided.json",
+  "original_sentence": "the cat are before an books .",
+  "corpus_size": 714,
+  "coverage_size": 718,
+  "mutants_killed": {
+    "pte cat with were before an books .": {
+      "kill_count": 704,
+      "sut_error_kill_count": 505
+    },
+    ". pthe i!s before books cat an": {
+      "kill_count": 976,
+      "sut_error_kill_count": 658
+    },
+    "an cat with are books pte be.ore .": {
+      "kill_count": 891,
+      "sut_error_kill_count": 603
+    },
+    "pte cat with are books an bef.ore .": {
+      "kill_count": 1079,
+      "sut_error_kill_count": 690
+    },
+    "pthe cats are before an cats books .": {
+      "kill_count": 668,
+      "sut_error_kill_count": 511
+    },
+    ". pgh* before books an are cat": {
+      "kill_count": 1114,
+      "sut_error_kill_count": 606
+    },
+    "oos cats ae befo.re an the .": {
+      "kill_count": 775,
+      "sut_error_kill_count": 505
+    },
+    "wasbooks an am before pthe cat .": {
+      "kill_count": 885,
+      "sut_error_kill_count": 592
+    },
+    "she pte . cat are before an books before": {
+      "kill_count": 677,
+      "sut_error_kill_count": 487
+    },
+    "pte cat were before an book .": {
+      "kill_count": 677,
+      "sut_error_kill_count": 490
+    }
+  },
+  "mutant_count": 2688
+}

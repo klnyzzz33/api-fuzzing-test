@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_155418-coverage-guided.json",
+  "original_sentence": "the airplane are the small plane .",
+  "corpus_size": 698,
+  "coverage_size": 701,
+  "mutants_killed": {
+    "airplane the are the books lane .E smallest": {
+      "kill_count": 990,
+      "sut_error_kill_count": 637
+    },
+    "airplane are the small plane": {
+      "kill_count": 694,
+      "sut_error_kill_count": 530
+    },
+    "smalWl arethe airlane plane . airplane": {
+      "kill_count": 919,
+      "sut_error_kill_count": 613
+    },
+    "airplane am the . small": {
+      "kill_count": 887,
+      "sut_error_kill_count": 608
+    },
+    "the airp`lane are the smaloUlet . plane bo+oks": {
+      "kill_count": 817,
+      "sut_error_kill_count": 508
+    },
+    "small are the airp~lane plane .": {
+      "kill_count": 859,
+      "sut_error_kill_count": 578
+    },
+    "the was airplane he small ple .": {
+      "kill_count": 833,
+      "sut_error_kill_count": 537
+    },
+    "the airplane are the smaNll plane . airplane": {
+      "kill_count": 636,
+      "sut_error_kill_count": 491
+    },
+    ". pDlane the small are ai_rplane": {
+      "kill_count": 1102,
+      "sut_error_kill_count": 739
+    },
+    "airplane the are the smalolest lqane .E books": {
+      "kill_count": 758,
+      "sut_error_kill_count": 492
+    }
+  },
+  "mutant_count": 2688
+}

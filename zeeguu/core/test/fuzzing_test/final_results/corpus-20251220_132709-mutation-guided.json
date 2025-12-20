@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_132709-mutation-guided.json",
+  "original_sentence": "an large cat running silently a books .",
+  "corpus_size": 577,
+  "coverage_size": 464,
+  "mutants_killed": {
+    "silently an the running . cat books large": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2672
+    },
+    "e. books a run large cat aFn": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2673
+    },
+    "large cat running silently a book an": {
+      "kill_count": 749,
+      "sut_error_kill_count": 584
+    },
+    "books an the ran silently lr/ge .": {
+      "kill_count": 2682,
+      "sut_error_kill_count": 546
+    },
+    ". cat the bo$os silently large aSn running": {
+      "kill_count": 834,
+      "sut_error_kill_count": 520
+    },
+    ". cat were a run silently large books an": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 509
+    },
+    ". large an books silentl[y cat running m a": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 2675
+    },
+    "e. plane large a went running cat boks an": {
+      "kill_count": 2681,
+      "sut_error_kill_count": 542
+    },
+    "running large a . silently Ccat books an": {
+      "kill_count": 2685,
+      "sut_error_kill_count": 2684
+    },
+    ". large a run silently cat books an": {
+      "kill_count": 2686,
+      "sut_error_kill_count": 454
+    }
+  },
+  "mutant_count": 2688
+}

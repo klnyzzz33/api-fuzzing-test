@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_131816-unguided.json",
+  "original_sentence": "the cat are before an books .",
+  "corpus_size": 989,
+  "coverage_size": 739,
+  "mutants_killed": {
+    "the befor an book .": {
+      "kill_count": 800,
+      "sut_error_kill_count": 541
+    },
+    "are the cat plane before anbook airplane .": {
+      "kill_count": 816,
+      "sut_error_kill_count": 542
+    },
+    "an went are before clat . tiny books slowly slowly the": {
+      "kill_count": 891,
+      "sut_error_kill_count": 511
+    },
+    "the an who areO beforfe cat book . go": {
+      "kill_count": 925,
+      "sut_error_kill_count": 611
+    },
+    "beforean cat are the books . the": {
+      "kill_count": 918,
+      "sut_error_kill_count": 597
+    },
+    "the an books .": {
+      "kill_count": 606,
+      "sut_error_kill_count": 427
+    },
+    "befoean cat are . books the the": {
+      "kill_count": 1088,
+      "sut_error_kill_count": 674
+    },
+    "the catG are before anboku .": {
+      "kill_count": 823,
+      "sut_error_kill_count": 512
+    },
+    "a book is an cat .": {
+      "kill_count": 859,
+      "sut_error_kill_count": 578
+    },
+    "the cats are beforean\" re books . .": {
+      "kill_count": 726,
+      "sut_error_kill_count": 545
+    }
+  },
+  "mutant_count": 2688
+}

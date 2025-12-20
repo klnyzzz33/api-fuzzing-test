@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_155410-unguided.json",
+  "original_sentence": "the airplane are the small plane .",
+  "corpus_size": 979,
+  "coverage_size": 572,
+  "mutants_killed": {
+    "the airplane are the sal whom plane. they": {
+      "kill_count": 691,
+      "sut_error_kill_count": 544
+    },
+    "plane she silently airpzlane runs are the the small the : .": {
+      "kill_count": 811,
+      "sut_error_kill_count": 534
+    },
+    "cat the silently small books airplane are the sh airplan(e . me larger": {
+      "kill_count": 864,
+      "sut_error_kill_count": 575
+    },
+    "plane she silently airplane are the the smallE the .": {
+      "kill_count": 821,
+      "sut_error_kill_count": 540
+    },
+    "small she silently airplane are the thez plne th . was": {
+      "kill_count": 837,
+      "sut_error_kill_count": 563
+    },
+    "plane she silenty airplane are an the smallE the cat .": {
+      "kill_count": 791,
+      "sut_error_kill_count": 529
+    },
+    "the she silently airplane are the the small plane .": {
+      "kill_count": 636,
+      "sut_error_kill_count": 467
+    },
+    "small plane she silently airpzlane is the the small thei .": {
+      "kill_count": 788,
+      "sut_error_kill_count": 526
+    },
+    "small th silently airplane is thqe sh airplane .": {
+      "kill_count": 885,
+      "sut_error_kill_count": 626
+    },
+    "airplane the theyplane were the small plane .": {
+      "kill_count": 803,
+      "sut_error_kill_count": 597
+    }
+  },
+  "mutant_count": 2688
+}

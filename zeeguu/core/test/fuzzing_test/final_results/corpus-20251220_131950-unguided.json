@@ -1,0 +1,49 @@
+{
+  "file": "zeeguu/core/test/fuzzing_test/results/corpus-20251220_131950-unguided.json",
+  "original_sentence": "the tiny cats eat quickly a cats .",
+  "corpus_size": 979,
+  "coverage_size": 685,
+  "mutants_killed": {
+    "cats tiny an was eat ! quickly cats an cat .": {
+      "kill_count": 826,
+      "sut_error_kill_count": 581
+    },
+    "cats tiny an thoe cat qucklHy slowly eat at .": {
+      "kill_count": 813,
+      "sut_error_kill_count": 509
+    },
+    "thoe tiny slowly cat eat quckly a cat at .": {
+      "kill_count": 556,
+      "sut_error_kill_count": 376
+    },
+    "cats tiny1cats eat quickly . is the an": {
+      "kill_count": 589,
+      "sut_error_kill_count": 376
+    },
+    "the |tiny1 cats ate quickly an cats . silently go": {
+      "kill_count": 648,
+      "sut_error_kill_count": 439
+    },
+    "thoe tiny cat eating quckly a are cat at .": {
+      "kill_count": 680,
+      "sut_error_kill_count": 500
+    },
+    "the an cats eatquickly tiny cats": {
+      "kill_count": 745,
+      "sut_error_kill_count": 576
+    },
+    "cats tiny1 cts he who quickly anthe .": {
+      "kill_count": 773,
+      "sut_error_kill_count": 516
+    },
+    "the` goes tiny cat)s cats quickly aneat . cats": {
+      "kill_count": 1069,
+      "sut_error_kill_count": 629
+    },
+    "the tiny cat ate quickly a cats .": {
+      "kill_count": 563,
+      "sut_error_kill_count": 441
+    }
+  },
+  "mutant_count": 2688
+}
