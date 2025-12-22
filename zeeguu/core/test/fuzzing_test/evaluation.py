@@ -104,7 +104,7 @@ def sample_eval_inputs(corpus_result_mapping, number_of_samples):
             chosen = random.choice(corpus_result_mapping)
         sampled.append(chosen)
     return sampled
-    
+
 
 def get_mutant_count():
     conn = sqlite3.connect(COSMIC_RAY_SESSION)

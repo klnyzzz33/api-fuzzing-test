@@ -14,11 +14,13 @@ def test_gec_cosmic_ray_bridge():
     original_sentence = mutation_bridge["ORIGINAL_SENTENCE"]
     mutated_sentence = mutation_bridge["MUTATED_SENTENCE"]
     expected = mutation_bridge["EXPECTED_OUTPUT"]
+
     agt = agt_module.AutoGECTagging(SPACY_EN_MODEL, 'en')
     user_tokens = mutated_sentence.split(" ")
     word_dict_list = [{"word": w, "isInSentence": True} for w in user_tokens]
     actual = agt.anottate_clues(word_dict_list, original_sentence)
     result = f"SUT return value: {actual}\nExpected return value: {expected}"
+
     try:
         for entry in actual:
             entry.pop("feedback", None)

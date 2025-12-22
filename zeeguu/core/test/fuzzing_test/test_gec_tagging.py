@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import json
+import logging
 import os
 import pkgutil
 import sqlite3
@@ -118,10 +119,12 @@ GEC_REPLACE: dict[str, List[str]] = {
 
 MUTATOR = GecMutator(TERMINALS, GEC_REPLACE)
 
+logger = logging.getLogger(__name__)
+
 
 def test_gec_tagging_labels(test_env):
     original_sentence = gec_generate_seed(grammar=GEC_INPUT_GRAMMAR)
-    print(f"\nOriginal sentence: {original_sentence}")
+    logger.info(f"\nOriginal sentence: {original_sentence}")
 
     def annotate_clues_wrapper(mutated_sentence: str):
         from zeeguu.core.nlp_pipeline import AutoGECTagging, SPACY_EN_MODEL
@@ -131,54 +134,60 @@ def test_gec_tagging_labels(test_env):
         return agt.anottate_clues(word_dictionary_list, original_sentence)
 
     max_iteration = 1000
+
     unguided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
     coverage_guided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
     mutation_guided_fuzz(annotate_clues_wrapper, original_sentence, max_iteration)
 
 
 def unguided_fuzz(method, original_sentence, max_iteration):
-    print("\nStarting unguided fuzzing...\n")
+    logger.info("\nStarting unguided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
     fuzzer = UnguidedFuzzer(seeds, MUTATOR, PowerSchedule())
-    i = 0
-    while i < max_iteration:
+
+    for i in range(max_iteration):
         fuzzer.run(runner)
-        if i % 500 == 0: print(f"Fuzzing iteration #{i + 1}")
-        i += 1
+        if i % 500 == 0:
+            print(f"Fuzzing iteration #{i + 1}")
+
     fuzzer.save_population('unguided', original_sentence)
-    print("Fuzzing loop ended.")
-    print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
+    logger.info("Fuzzing loop ended.")
+    logger.info(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
 
 
 def coverage_guided_fuzz(method, original_sentence, max_iteration):
-    print("\nStarting coverage-guided fuzzing...\n")
+    logger.info("\nStarting coverage-guided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, AFLFastSchedule(5))
-    i = 0
-    while i < max_iteration:
+
+    for i in range(max_iteration):
         fuzzer.run(runner)
-        if i % 500 == 0: print(f"Fuzzing iteration #{i + 1}")
-        i += 1
+        if i % 500 == 0:
+            logger.info(f"Fuzzing iteration #{i + 1}")
+
     fuzzer.save_population('coverage-guided', original_sentence)
-    print("Fuzzing loop ended.")
-    print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
+    logger.info("Fuzzing loop ended.")
+    logger.info(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
 
 
 def mutation_guided_fuzz(method, original_sentence, max_iteration):
-    print("\nStarting mutation testing-guided fuzzing...\n")
+    logger.info("\nStarting mutation testing-guided fuzzing...\n")
     seeds = [original_sentence]
     runner = FunctionCoverageRunner(method)
     fuzzer = CountingGreyboxFuzzer(seeds, MUTATOR, AFLFastSchedule(5))
+
     total_kill_count = 0
     mutant_set = set()
     false_positives_timeout = 0
     false_positives_error = 0
-    i = 0
-    while i < max_iteration:
+
+    for i in range(max_iteration):
         result, _, coverage_increased = fuzzer.run(runner)
-        if i % 500 == 0: print(f"Fuzzing iteration #{i + 1}")
+        if i % 500 == 0:
+            logger.info(f"Fuzzing iteration #{i + 1}")
+
         if not coverage_increased:
             kill_count, mutant_set, false_positives_timeout, false_positives_error = run_mutation_tests(
                 original_sentence, fuzzer.inp, result, mutant_set, runner.coverage())
@@ -190,39 +199,42 @@ def mutation_guided_fuzz(method, original_sentence, max_iteration):
                     fuzzer.add_to_population(seed, result)
             clear_skipped_and_survived_mutants()
             reset_sut_source_code()
-        i += 1
+
     fuzzer.save_population('mutation-guided', original_sentence)
-    print("Fuzzing loop ended.")
-    print(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
-    print(f"Mutants killed: {total_kill_count} out of {len(mutant_set)}")
-    print(f"Mutation score: {total_kill_count / len(mutant_set) * 100 if len(mutant_set) > 0 else 0:.2f}%")
-    print(f"Timeout false positives: {false_positives_timeout}")
-    print(f"System under test error false positives: {false_positives_error}")
+    logger.info("Fuzzing loop ended.")
+    logger.info(f"Unique executions paths discovered: {len(fuzzer.coverages_seen)}")
+    logger.info(f"Mutants killed: {total_kill_count} out of {len(mutant_set)}")
+    logger.info(f"Mutation score: {total_kill_count / len(mutant_set) * 100 if len(mutant_set) > 0 else 0:.2f}%")
+    logger.info(f"Timeout false positives: {false_positives_timeout}")
+    logger.info(f"System under test error false positives: {false_positives_error}")
 
 
 def run_mutation_tests(original_sentence, input_str, expected_output, mutant_set, coverage, debug=False):
     with open(MUTATION_BRIDGE_FILE_PATH, 'w') as f:
         json.dump({"ORIGINAL_SENTENCE": original_sentence, "MUTATED_SENTENCE": input_str,
                    "EXPECTED_OUTPUT": expected_output}, f)
+
     try:
-        if debug: print("Coverage not increased. Starting mutation testing...")
+        logger.debug("Coverage not increased. Starting mutation testing...")
         has_killable_mutants = filter_killable_mutants(coverage)
         if not has_killable_mutants:
-            if debug: print("Nothing to test in current iteration, skipping mutation testing.\n")
+            logger.debug("Nothing to test in current iteration, skipping mutation testing.\n")
             kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
                 mutant_set)
             return kill_count, mutant_set, false_positives_timeout, false_positives_error
         handle_exec_inprocess_batch(COSMIC_RAY_CONFIG, COSMIC_RAY_SESSION)
     except Exception as e:
-        if debug: print(f"Unexpected error: {e}")
-    if debug: print("Mutation testing ended.")
+        logger.debug(f"Unexpected error: {e}")
+    logger.debug("Mutation testing ended.")
+
     kill_count, mutant_set, false_positives_timeout, false_positives_error = get_mutation_test_results_from_db(
         mutant_set)
-    if debug:
-        print(f"{kill_count} killed mutants out of {len(mutant_set)}")
-        print(f"Mutation score: {kill_count / len(mutant_set) * 100:.2f}%")
-        print(f"Timeout false positives: {false_positives_timeout}")
-        print(f"System under test error false positives: {false_positives_error}\n")
+
+    logger.debug(f"{kill_count} killed mutants out of {len(mutant_set)}")
+    logger.debug(f"Mutation score: {kill_count / len(mutant_set) * 100:.2f}%")
+    logger.debug(f"Timeout false positives: {false_positives_timeout}")
+    logger.debug(f"System under test error false positives: {false_positives_error}\n")
+
     return kill_count, mutant_set, false_positives_timeout, false_positives_error
 
 

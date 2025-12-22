@@ -15,9 +15,6 @@ def main():
             if key in path:
                 test_results[key].append(test_result)
     statistics = calculate_statistics(test_results)
-    for method, stat in statistics.items():
-        print(f"{method}: average kill count = {stat['kill_count_average']:.2f}")
-        print(f"{method}: average coverage = {stat['coverage_average']:.2f}")
     plot_results(statistics)
 
 
@@ -28,6 +25,7 @@ def calculate_statistics(test_results):
         total_coverage = 0
         kill_count_distribution = []
         coverage_distribution = []
+
         for result in results:
             for kill_count_values in result.mutants_killed.values():
                 kill_count_value = kill_count_values["kill_count"]
